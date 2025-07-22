@@ -1,6 +1,6 @@
 # Hedera Minimalist Wallet – Backend API
 
-## Table des matières
+## Table of contents
 
 - [Description](#description)
 - [Tech Stack](#tech-stack)
@@ -541,6 +541,7 @@ A message was successfully sent to Hedera topic 0.0.6381812, and a copy was stor
 ---
 
 ### Step 11 – Local Message Retrieval (SQLite query only)
+
 No public API is exposed for message reading. Persistence is verified manually through SQLite:
 
 Verification in the table message_entity in hedera-ballet.db from visual code.
