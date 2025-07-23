@@ -122,6 +122,97 @@ describe('TokensService – full stable test', () => {
     expect(mockTokenRepo.save).toHaveBeenCalledWith(result);
   });
 
+  it('should throw if operator credentials are missing', async () => {
+    delete process.env.OPERATOR_ID;
+    delete process.env.OPERATOR_KEY;
+
+    await expect(async () => {
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          TokensService,
+          { provide: getRepositoryToken(TokenEntity), useValue: mockTokenRepo },
+          { provide: getRepositoryToken(AssociationEntity), useValue: mockAssocRepo },
+          { provide: getRepositoryToken(TokenTransferEntity), useValue: mockTransferRepo },
+        ],
+      }).compile();
+
+      module.get<TokensService>(TokensService);
+    }).rejects.toThrow('Missing operator credentials in environment variables');
+  });
+
+  it('should throw if operator accountId or publicKey is missing', async () => {
+    // Simule un client sans credentials internes
+    jest.mocked(require('@hashgraph/sdk').Client.forTestnet).mockReturnValue({
+      setOperator: jest.fn(),
+      operatorAccountId: undefined,
+      operatorPublicKey: undefined,
+    });
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TokensService,
+        { provide: getRepositoryToken(TokenEntity), useValue: mockTokenRepo },
+        { provide: getRepositoryToken(AssociationEntity), useValue: mockAssocRepo },
+        { provide: getRepositoryToken(TokenTransferEntity), useValue: mockTransferRepo },
+      ],
+    }).compile();
+
+    const brokenService = module.get<TokensService>(TokensService);
+
+    const dto: CreateTokenDto = {
+      name: 'FailToken',
+      symbol: 'FAIL',
+      initialSupply: 100,
+    };
+
+    await expect(brokenService.createToken(dto)).rejects.toThrow(
+      'Operator credentials not properly initialized'
+    );
+  });
+
+  it('should throw if tokenId is missing in the receipt', async () => {
+    jest.mocked(require('@hashgraph/sdk').Client.forTestnet).mockReturnValue({
+      setOperator: jest.fn(),
+      operatorAccountId: '0.0.operator',
+      operatorPublicKey: 'mocked-public-key',
+    });
+
+    jest.mocked(require('@hashgraph/sdk').TokenCreateTransaction).mockImplementation(() => ({
+      setTokenName: jest.fn().mockReturnThis(),
+      setTokenSymbol: jest.fn().mockReturnThis(),
+      setInitialSupply: jest.fn().mockReturnThis(),
+      setDecimals: jest.fn().mockReturnThis(),
+      setTreasuryAccountId: jest.fn().mockReturnThis(),
+      setAdminKey: jest.fn().mockReturnThis(),
+      freezeWith: jest.fn().mockReturnThis(),
+      sign: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({
+        getReceipt: jest.fn().mockResolvedValue({ tokenId: null }),
+      }),
+    }));
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TokensService,
+        { provide: getRepositoryToken(TokenEntity), useValue: mockTokenRepo },
+        { provide: getRepositoryToken(AssociationEntity), useValue: mockAssocRepo },
+        { provide: getRepositoryToken(TokenTransferEntity), useValue: mockTransferRepo },
+      ],
+    }).compile();
+
+    const service = module.get<TokensService>(TokensService);
+
+    const dto: CreateTokenDto = {
+      name: 'MissingTokenId',
+      symbol: 'MTK',
+      initialSupply: 500,
+    };
+
+    await expect(service.createToken(dto)).rejects.toThrow(
+      'Token creation failed: tokenId missing in receipt'
+    );
+  });
+
   it('should associate token and persist relation', async () => {
     const dto: AssociateTokenDto = {
       accountId: '0.0.5001',
@@ -142,6 +233,39 @@ describe('TokensService – full stable test', () => {
       tokenId: '0.0.9999',
       status: 'ASSOCIATED',
     });
+  });
+
+  it('should throw if token association status is not SUCCESS', async () => {
+    jest.mocked(require('@hashgraph/sdk').TokenAssociateTransaction).mockImplementation(() => ({
+      setAccountId: jest.fn().mockReturnThis(),
+      setTokenIds: jest.fn().mockReturnThis(),
+      freezeWith: jest.fn().mockReturnThis(),
+      sign: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({
+        getReceipt: jest.fn().mockResolvedValue({ status: { toString: () => 'FAILED' } }),
+      }),
+    }));
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TokensService,
+        { provide: getRepositoryToken(TokenEntity), useValue: mockTokenRepo },
+        { provide: getRepositoryToken(AssociationEntity), useValue: mockAssocRepo },
+        { provide: getRepositoryToken(TokenTransferEntity), useValue: mockTransferRepo },
+      ],
+    }).compile();
+
+    const service = module.get<TokensService>(TokensService);
+
+    const dto: AssociateTokenDto = {
+      accountId: '0.0.1234',
+      privateKey: 'mocked-private-key',
+      tokenId: '0.0.9999',
+    };
+
+    await expect(service.associateToken(dto)).rejects.toThrow(
+      'Association failed: FAILED'
+    );
   });
 
   it('should transfer tokens and persist transaction', async () => {
@@ -172,4 +296,39 @@ describe('TokensService – full stable test', () => {
       transactionId: 'tx-mocked',
     });
   });
+  it('should throw if token transfer status is not SUCCESS', async () => {
+    jest.mocked(require('@hashgraph/sdk').TransferTransaction).mockImplementation(() => ({
+      addTokenTransfer: jest.fn().mockReturnThis(),
+      freezeWith: jest.fn().mockReturnThis(),
+      sign: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({
+        getReceipt: jest.fn().mockResolvedValue({ status: { toString: () => 'REJECTED' } }),
+        transactionId: { toString: () => 'tx-failed' },
+      }),
+    }));
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TokensService,
+        { provide: getRepositoryToken(TokenEntity), useValue: mockTokenRepo },
+        { provide: getRepositoryToken(AssociationEntity), useValue: mockAssocRepo },
+        { provide: getRepositoryToken(TokenTransferEntity), useValue: mockTransferRepo },
+      ],
+    }).compile();
+
+    const service = module.get<TokensService>(TokensService);
+
+    const dto: TransferTokenDto = {
+      fromAccountId: '0.0.5001',
+      fromPrivateKey: 'mocked-private-key',
+      toAccountId: '0.0.5002',
+      tokenId: '0.0.9999',
+      amount: 100,
+    };
+
+    await expect(service.transferToken(dto)).rejects.toThrow(
+      'Token transfer failed: REJECTED'
+    );
+  });
+
 });

@@ -767,7 +767,7 @@ The HTS token transfer via the API is also stored locally in SQLite via TokenTra
 
 Coverage:
 
-Jest reports near-full execution of tokens.service.ts: 95.45% statements, 75% branches, 100% functions, and 95.23% lines. Remaining lines correspond to non-functional console.log() statements. One conditional branch (SDK status code ≠ 194) remains uncovered by design and is not part of the functional test scope
+Jest reports near-full execution of tokens.service.ts: 100% statements, 100% branches, 100% functions, and 100% lines. All functional paths, conditional branches, and SDK responses are explicitly covered.
 
 ### Unit Testing – TopicsService
 
