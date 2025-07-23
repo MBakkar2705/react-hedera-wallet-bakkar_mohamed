@@ -783,20 +783,23 @@ Error coverage:
 
 - createTopic() throws an error if receipt.topicId is null → explicitly tested and captured
 
+- createTopic() handles conditional memo injection (branch line 30) → covered via dedicated test
+
+- sendMessage() simulates message delivery and persistence with mocked receipt
+
 Execution:
 
 pnpm run test
 
 Outcome:
 
-3 unit tests passed successfully. The TopicsService behaves deterministically and reproduces both success and error scenarios without external dependencies.
+4 unit tests passed successfully. The TopicsService behaves deterministically and reproduces both success and error scenarios without external dependencies.
 
 Coverage:
 
 Jest reports full execution of topics.service.ts:
-100% statements, 100% functions, 100% lines, and 75% branches.
-The remaining branch corresponds to the else path of createTopic() when receipt.topicId is valid, which Jest does not explicitly count due to test structure.
-This branch is not considered business logic and excluded from the functional test scope. All defined behaviors are tested and validated
+100% statements, 100% functions, 100% lines, and 100% branches.
+All conditional paths, including memo injection and error handling, are explicitly covered. The service logic is stable, predictable, and thoroughly validated in isolation
 
 ---
 

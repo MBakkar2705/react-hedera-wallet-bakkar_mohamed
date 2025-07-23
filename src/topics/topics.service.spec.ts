@@ -87,6 +87,34 @@ describe('TopicsService', () => {
         'Topic creation failed: no topicId returned by Hedera.'
       );
     });
+
+    it('should create a topic without memo and persist it', async () => {
+      // Remock local pour garantir receipt avec topicId
+      const sdk = require('@hashgraph/sdk');
+      sdk.TopicCreateTransaction.mockImplementation(() => ({
+        setTopicMemo: jest.fn().mockReturnThis(),
+        execute: jest.fn().mockResolvedValue({
+          getReceipt: jest.fn().mockResolvedValue({
+            topicId: { toString: () => '0.0.567890' },
+          }),
+        }),
+      }));
+
+      const dto = {}; // memo absent
+
+      const result = await service.createTopic(dto);
+
+      expect(result).toEqual({
+        topicId: '0.0.567890',
+        memo: undefined,
+      });
+
+      expect(mockTopicRepo.save).toHaveBeenCalledWith({
+        topicId: '0.0.567890',
+        memo: undefined,
+      });
+    });
+
   });
 
   describe('sendMessage()', () => {
