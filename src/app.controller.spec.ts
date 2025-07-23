@@ -16,7 +16,7 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Welcome to Hedera Wallet API by M. Bakkar');
+      expect(appController.getHello()).toBe('Welcome to Hedera Wallet API by M. Bakkar!');
     });
   });
 });
