@@ -78,4 +78,20 @@ export class TopicsService {
       createdAt
     };
   }
+  @ApiOperation({ summary: 'Retrieve all messages for a given HCS topic' })
+  @ApiResponse({ status: 200, description: 'Messages successfully retrieved from local persistence' })
+  @ApiResponse({ status: 404, description: 'No messages found for the given topicId' })
+  async getMessages(topicId: string): Promise<MessageEntity[]> {
+    const messages = await this.messageRepo.find({
+      where: { topicId },
+      order: { createdAt: 'ASC' }
+    });
+
+    if (!messages || messages.length === 0) {
+      throw new Error(`No messages found for topicId ${topicId}`);
+    }
+
+    return messages;
+  }
+
 }

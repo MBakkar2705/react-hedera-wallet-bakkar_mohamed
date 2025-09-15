@@ -525,7 +525,7 @@ Test command:
 
 curl.exe -X POST http://localhost:3000/topics/0.0.6381812/messages -H "Content-Type: application/json" -d "{\"message\":\"message test\"}"
 
-Smple respopnse:
+Sample response:
 
 {
   "topicId": "0.0.6381812",
@@ -540,18 +540,58 @@ A message was successfully sent to Hedera topic 0.0.6381812, and a copy was stor
 
 ---
 
-### Step 11 – Local Message Retrieval (SQLite query only)
+### Step 11 – Topic Message Retrieval (GET /topics/:topicId/messages)
 
-No public API is exposed for message reading. Persistence is verified manually through SQLite:
+This endpoint retrieves all messages previously submitted to a given Hedera Consensus Service (HCS) topic and stored in the local SQLite database.
 
-Verification in the table message_entity in hedera-ballet.db from visual code.
+Controller definition:
 
-Expected result: One row confirming the last submitted message:
+@Get(':topicId/messages')
+getMessages(@Param('topicId') topicId: string): Promise<MessageEntity[]> {
+  return this.topicsService.getMessages(topicId);
+}
 
-| topicId | message | transactionId | createdAt | 
-| 0.0.6381812 | message test | 0.0.6106565@1752946959.548320564 | 2025-07-19T17:42:47.446Z | 
+Service logic:
 
-Note: No HTTP GET endpoint is defined for message retrieval. This behavior is intentional and consistent with project scope.
+- Validates the provided topicId
+
+- Queries the local SQLite database via messageRepo.find({ where: { topicId } })
+
+- Throws a NotFoundException if no messages are found
+
+- Returns an array of persisted MessageEntity objects
+
+Returned fields per message:
+
+- id
+
+- topicId
+
+- message
+
+- transactionId
+
+- createdAt
+
+Test command:
+
+curl.exe -X GET http://localhost:3000/topics/0.0.6850099/messages -H "accept: */*"
+
+Sample response :
+
+[
+  {
+    "id": 6,
+    "topicId": "0.0.6850099",
+    "message": "string",
+    "transactionId": "0.0.6106565@1757930120.351338335",
+    "createdAt": "2025-09-15T09:55:28.119Z"
+  }
+]
+
+Outcome:
+
+Messages previously submitted to Hedera topic 0.0.6850099 were successfully retrieved from the message_entity table in the SQLite database (hedera-wallet.db). This confirms both persistence and retrievability via public API.
 
 ---
 
