@@ -37,6 +37,7 @@ describe('TopicsService', () => {
 
   const mockMessageRepo = {
     save: jest.fn(),
+    find : jest.fn(),
   };
 
   const mockClient = {}; // injected but unused directly
@@ -141,4 +142,44 @@ describe('TopicsService', () => {
       );
     });
   });
+
+  describe('getMessages()', () => {
+  it('should return messages for a valid topicId', async () => {
+    const topicId = '0.0.567890';
+    const mockMessages = [
+      {
+        id: 1,
+        topicId,
+        message: 'Hello',
+        transactionId: 'tx-1',
+        createdAt: new Date(),
+      },
+      {
+        id: 2,
+        topicId,
+        message: 'World',
+        transactionId: 'tx-2',
+        createdAt: new Date(),
+      },
+    ];
+
+    mockMessageRepo.find = jest.fn().mockResolvedValue(mockMessages);
+
+    const result = await service.getMessages(topicId);
+    expect(result).toEqual(mockMessages);
+    expect(mockMessageRepo.find).toHaveBeenCalledWith({
+       where: { topicId },
+      order: { createdAt: 'ASC' }      
+    });
+  });
+  it('should throw NotFoundException if no messages are found', async () => {
+    const topicId = '0.0.999999';
+    mockMessageRepo.find = jest.fn().mockResolvedValue([]);
+
+    await expect(service.getMessages(topicId)).rejects.toThrow(
+      `No messages found for topicId ${topicId}`
+    );
+  });
+});
+
 });

@@ -751,6 +751,35 @@ It is stored in /coverage/lcov-report/index.html after execution.
 Tests will be structured per service using .spec.ts files under src/.
 Coverage confirms execution paths for each feature listed
 
+### Unit Testing - AppController
+
+The file `src/app.controller.spec.ts` validates the core routing and response behavior of the `AppController`.
+
+Structure:
+
+- Uses Jest’s `describe()` and `it()` blocks to verify basic controller responses
+- Ensures that the controller is properly instantiated and returns expected values
+- No external dependencies or SDK calls are involved
+
+Error coverage :
+
+- The controller is tested for correct instantiation and response formatting
+- No conditional logic or exception handling is present in the controller itself
+- The tests confirm that the controller behaves predictably under normal conditions
+
+Execution :
+
+pnpm run test
+
+Outcome:
+
+3 unit tests passed successfully. The controller is correctly wired and responds as expected, confirming the integrity of the application’s entry point
+
+Coverage :
+
+Jest coverage confirms full execution of app.controller.ts (100% statements, branches, functions, and lines). The file is fully tested in isolation, and all exposed routes are validated for expected behavior.
+
+
 ### Unit Testing – AccountsService
 
 A dedicated file src/accounts/accounts.service.spec.ts covers the main logic of the AccountsService independently from the Hedera SDK and SQLite.
@@ -778,7 +807,21 @@ Outcome:
 
 Coverage:
 
-Jest coverage confirms full execution of accounts.service.ts (100% statements, branches, functions, and lines). The file is fully tested in isolation.
+Jest coverage confirms full execution of `accounts.service.ts` (100% statements, branches, functions, and lines).  
+The service file is fully tested in isolation.
+
+However, the file `account.entity.ts` shows partial coverage:  
+- 90.9% statements  
+- 100% branches  
+- 0% functions  
+- 88.88% lines  
+
+This is due to the `createdAt` property, which is decorated with a default timestamp via TypeORM:  
+
+@Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+createdAt: Date;
+
+This partial coverage is acknowledged and will be addressed in future iterations.
 
 ### Unit Testing – TokensService
 
@@ -811,12 +854,12 @@ Jest reports near-full execution of tokens.service.ts: 100% statements, 100% bra
 
 ### Unit Testing – TopicsService
 
-A dedicated file src/topics/topics.service.spec.ts covers the main logic of the TopicsService, including topic creation and message publication, independently from the Hedera SDK and SQLite.
+A dedicated file src/topics/topics.service.spec.ts covers the main logic of the TopicsService, including topic creation, message publication and message retrieval, independently from the Hedera SDK and SQLite.
 
 Structure:
 
-- Segmented using Jest’s describe() blocks for each method: createTopic() and sendMessage()
-- SDK calls are fully mocked via jest.mock('@hashgraph/sdk'), including TopicCreateTransaction, TopicMessageSubmitTransaction, and transactionId handling
+- Segmented using Jest’s describe() blocks for each method: createTopic(), sendMessage() and getMessages()
+- SDK calls are fully mocked via jest.mock('@hashgraph/sdk'), including TopicCreateTransaction, TopicMessageSubmitTransaction, TopicId.fromString(), and transactionId handling
 - Repositories (topicRepo, messageRepo) are mocked via NestJS getRepositoryToken
 
 Error coverage:
@@ -827,13 +870,15 @@ Error coverage:
 
 - sendMessage() simulates message delivery and persistence with mocked receipt
 
+- getMessages() throws if no messages are found → tested with empty result
+
 Execution:
 
 pnpm run test
 
 Outcome:
 
-4 unit tests passed successfully. The TopicsService behaves deterministically and reproduces both success and error scenarios without external dependencies.
+All 6 unit tests passed successfully. The TopicsService behaves deterministically and reproduces both success and error scenarios without external dependencies.
 
 Coverage:
 
