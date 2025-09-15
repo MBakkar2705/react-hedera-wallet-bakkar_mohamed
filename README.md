@@ -1013,7 +1013,7 @@ This route ensures that the backend is accessible before engaging with Hedera
 
 ### Topics Module Coverage:
 
-The following endpoints — POST /topics and POST /topics/:topicId/messages — are documented via Swagger with:
+The following endpoints — POST /topics, POST /topics/:topicId/messages and GET /topics/:topicId/messages — are documented via Swagger with:
 
 - @ApiTags('topics') for logical grouping
 - @ApiBody() and @ApiParam() decorators referencing:
@@ -1021,11 +1021,14 @@ The following endpoints — POST /topics and POST /topics/:topicId/messages — 
 	- CreateTopicDto (optional memo field)
 	- SendMessageDto (required message field)
 	- @ApiParam('topicId') for dynamic path
+  - @ApiQuery('limit') for optional pagination in GET requests
 
 - @ApiResponse() annotations aligned per route:
 
-	- 201: success for topic creation and message submission
+	- 200: success for message retrieval
+  - 201: success for topic creation and message submission
 	- 400: validation errors or SDK exceptions (e.g. invalid topicId)
+  - 404: topic not found (GET only)
 
 - DTOs annotated with @ApiProperty() for Swagger schema generation
 - Combined with class-validator decorators (@IsString(), @IsOptional()) for payload enforcement
@@ -1034,6 +1037,7 @@ All returned responses expose consistent fields:
 
 - Topic creation: topicId, memo
 - Message submission: topicId, message, transactionId, createdAt
+- Message retrieval: array of MessageDto objects with topicId, message, createdAt
 
 Outcome:
 
@@ -1044,6 +1048,7 @@ This section enables:
 
 - Form-based creation of HCS topics with optional metadata
 - Submission of string messages to active topics via typed payloads
+- Retrieval of topic messages via structured GET requests with optional limit
 - Persistence confirmed locally via TopicEntity and MessageEntity
 (visible in SQLite and verifiable during development)
 
