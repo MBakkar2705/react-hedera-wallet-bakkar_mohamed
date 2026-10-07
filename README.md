@@ -11,6 +11,7 @@
 - [Setup Instructions](#setup-instructions)
 - [Running Tests](#running-tests)
 - [Swagger Access](#swagger-access)
+- [Docker and CI](#docker-and-ci)
 - [Author](#author)
 
 ## Description
@@ -1051,6 +1052,25 @@ This section enables:
 - Retrieval of topic messages via structured GET requests with optional limit
 - Persistence confirmed locally via TopicEntity and MessageEntity
 (visible in SQLite and verifiable during development)
+
+---
+
+## Docker and CI
+
+A multi-stage Dockerfile builds a production image (Node 22, pnpm via corepack, runs as non-root user).
+
+Build the image:
+
+docker build -t hedera-wallet .
+
+Credentials are not included in the image (.env is excluded by .dockerignore).
+Running the container requires OPERATOR_ID and OPERATOR_KEY, provided at runtime:
+
+docker run --rm -p 3000:3000 --env-file .env hedera-wallet
+
+Without these variables, the application exits at startup.
+
+The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies with pnpm and runs pnpm test on every push and pull request.
 
 ---
 
