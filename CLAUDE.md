@@ -9,6 +9,13 @@ NestJS backend (Hedera wallet API) at the repo root, source in `src/`. A Next.js
 - Install: `pnpm install`
 - Test: `pnpm test` (4 suites, 20 tests; all must pass)
 
+## Commands (frontend)
+
+- Dev server (port 3001): `pnpm --filter frontend dev`
+- Lint: `pnpm --filter frontend lint`
+- Build: `pnpm --filter frontend build`
+- There is no frontend test script yet.
+
 ## Rules
 
 - Never read, create or print any `.env` file (including `.env.local`) or any private key.
@@ -17,7 +24,7 @@ NestJS backend (Hedera wallet API) at the repo root, source in `src/`. A Next.js
 - Work only in `frontend/`. Do not modify `src/`, the `Dockerfile`, `.github/`, the root `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `jest.config.js`, `nest-cli.json`, `tsconfig*.json` or `eslint.config.mjs` unless I explicitly ask.
 - I write the application code in `frontend/` (pages, components, hooks, API calls). Do not write it unless I explicitly ask. Explain, review, point out bugs, propose plans and ask me questions.
 - Before writing any file, tell me your plan in a few lines. After writing, explain each choice.
-- Backend: run `pnpm test` at the repo root after any change that touches the backend, and report the result. Frontend commands (install, dev, build, test) are not defined yet: do not assume them. I will add them here once `frontend/package.json` exists.
+- Backend: run `pnpm test` at the repo root after any change that touches the backend, and report the result. Frontend: after any change in `frontend/`, run `pnpm --filter frontend lint` and `pnpm --filter frontend build`, and report the result.
 - Keep the API base URL in a single place in the frontend, and do not import code between `frontend/` and `src/`, so the backend can later be split into services without changing the frontend.
 - Do not run `git commit` or `git push`. I do the commits myself after reviewing.
 - Stay on the current branch; do not create or delete branches.
