@@ -17,7 +17,7 @@ The backend is built with `nest build`, tested with Jest, packaged by a multi-st
 2. The frontend is excluded from the backend build, the Jest run and the Docker context: `frontend` in the `exclude` list of `tsconfig.build.json`, `<rootDir>/frontend/` in `testPathIgnorePatterns` of `jest.config.js`, and a `frontend` line in `.dockerignore` (commit `3eb0303`).
 3. The scaffold comes from create-next-app (commit `de98d06`): Next.js 16.4.0, React 19.3.0, TypeScript, Tailwind CSS, ESLint and the App Router, with `app/` directly under `frontend/` (no `src/` directory). The option `experimental.agentFeedback` is set to `false` in `next.config.ts`. It controls whether `next dev` creates and updates instructions for detected AI coding agents; it is disabled so that no file is changed by that mechanism.
 4. The dev server listens on port 3001 (`next dev -p 3001`, commit `b6696c5`), because the backend listens on port 3000 by default.
-5. Two boundaries keep a later split into services possible: the frontend will reach the API through one base URL defined in a single place, and no code is imported between `frontend/` and `src/`. Both rules are written in `CLAUDE.md` (see ADR 0004). No frontend code uses them yet.
+5. Two boundaries keep a later split into services possible: the frontend will reach the API through one base URL defined in a single place, and no code is imported between `frontend/` and `src/`. Both rules are written in `CLAUDE.md` (see ADR 0004). The accounts screen follows them: the API address is defined only in `frontend/lib/api.ts`, and nothing in `frontend/` imports from `src/`.
 6. Moving the backend into a `backend/` folder is postponed. It would touch the Dockerfile, the CI workflow, `jest.config.js`, `nest-cli.json` and the tsconfig files. It will be done in its own branch, with `git mv`, before any work on services.
 
 ## Alternatives considered
@@ -41,11 +41,11 @@ The backend is built with `nest build`, tested with Jest, packaged by a multi-st
 - After `nest build`, `dist/main.js` exists and `dist/frontend` does not.
 - `docker build -t hedera-wallet .` succeeds after the workspace change.
 - GitHub Actions run #5, after the scaffold commit, was green (reported by the author).
-- Frontend lint and build pass locally, and the dev server shows the default page on port 3001.
+- Frontend lint and build pass locally. The accounts screen was tested by hand in a browser on port 3001 against the running backend: account creation, balance lookup, a malformed ID and an unknown ID.
 
 ### Not proven
 
 - The pnpm behavior without a `packages` list in version 10.11.0: the documentation read describes version 12.x.
 - That `nest build` reads `tsconfig.build.json` by default: observed in the build output, not confirmed in the documentation.
-- The two boundary rules are not implemented or checked in code yet.
+- The two boundary rules are only checked by reading the code. Nothing enforces them automatically.
 - A Jest warning, "worker process has failed to exit gracefully", appeared once locally. The cause is unknown; the CI passes.

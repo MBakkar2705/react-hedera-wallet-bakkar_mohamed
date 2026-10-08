@@ -204,7 +204,7 @@ The account credentials (ID + key pair) are returned and persisted locally in th
 
 ### Step 4 – Account Info & Balance Retrieval (GET /accounts/:accountId)
 
-This endpoint retrieves the current HBAR balance and status of a Hedera account.
+This endpoint retrieves the current HBAR balance and the token associations of a Hedera account.
 
 Controller definition:
 
@@ -224,25 +224,26 @@ Service logic:
 - Parses and returns:
 
 	- accountId
-	- balance
-	- status
+	- hbarBalance
+	- tokenAssociations (list of token IDs)
 	
 Test command:
 
-curl.exe http://localhost:3000/accounts/0.0.6372035
+curl.exe http://localhost:3000/accounts/0.0.10936687
 
 Sample response:
 
 {
-  "accountId": "0.0.6372035",
-  "balance": 10,
-  "status": "ACTIVE"
+  "accountId": "0.0.10936687",
+  "hbarBalance": "1 ℏ",
+  "tokenAssociations": []
 }
 
 Outcome:
 
-The account information for 0.0.6372035 was successfully retrieved.
+The account information for 0.0.10936687 was successfully retrieved.
 The HBAR balance reflects the latest state on the Hedera testnet
+An unknown account ID returns HTTP 500 with the message "Internal server error": getAccountInfo wraps every SDK error in a plain Error, so the API does not return a 404.
 
 This retrieval does not create a new row in SQLite, but can be cross-checked against existing entries in hedera-wallet.db
 
@@ -733,7 +734,9 @@ Both pairs can hold the same testnet account. The application exits at startup i
 
 The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0002](docs/adr/0002-frontend-integration-in-the-repository.md).
 
-Current state: work in progress. The project was created with create-next-app and lint and build pass. The page is still the default one: no wallet screen exists yet. Planned screens: accounts, HBAR transfer, tokens, topic messages.
+Current state: work in progress. The accounts screen (`/accounts`) creates an account and looks up its balance. It was tested by hand in a browser against the running backend. Lint and build pass. Planned screens: HBAR transfer, tokens, topic messages.
+
+The API address is defined in one place, `frontend/lib/api.ts` (variable `NEXT_PUBLIC_API_URL`, default `http://localhost:3000`).
 
 Scripts defined in `frontend/package.json`: dev, build, start, lint.
 
@@ -743,9 +746,9 @@ pnpm --filter frontend dev
 
 The frontend runs on http://localhost:3001 and the backend on http://localhost:3000.
 
-CORS: the backend allows a single origin, http://localhost:3001 (`src/main.ts`). This was checked with curl; it has not been tested yet from a page in a browser.
+CORS: the backend allows a single origin, http://localhost:3001 (`src/main.ts`). This was checked with curl and from the accounts page in a browser: the browser sent a preflight request (204) before the POST (201).
 
-Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend will keep keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md).
+Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md).
 
 ---
 
@@ -986,7 +989,7 @@ The following endpoints — POST /accounts, GET /accounts/:accountId, and POST /
 All returned responses expose consistent fields:
 
 - Creation: accountId, publicKey, privateKey, initialBalance
-- Info retrieval: accountId, balance, status
+- Info retrieval: accountId, hbarBalance, tokenAssociations
 - HBAR transfer: status, transactionId, from, to, amount
 
 Outcome:

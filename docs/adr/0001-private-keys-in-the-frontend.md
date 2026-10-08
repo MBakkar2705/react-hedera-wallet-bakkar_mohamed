@@ -37,9 +37,9 @@ Signing in the browser with a wallet, so that no private key is sent to the API.
 - `src/main.ts` contains the line `app.enableCors({ origin: 'http://localhost:3001' });` (commit `3b498dd`).
 - The CORS response header was checked with `curl` against the running backend.
 - The README documents a request body with `fromPrivateKey` for `POST /tokens/transfer`.
+- From the accounts page of the frontend, in a browser, a JSON POST to `/accounts` got a preflight response (204) and then a 201 response, which the page displayed. No CORS error appeared in the console.
 
 ### Not proven
 
-- CORS from a real page in a browser: it will be checked with the first screen that sends a POST.
-- That the frontend never stores a key: no screen exists yet, so this rule is not yet verified in code.
+- That the frontend never stores a key: the accounts screen keeps the new key in React state only (read in the code, where no storage call exists), but this was not tested, and the other screens do not exist yet.
 - The effort of wallet signing: the statement that it requires changes in `src/` and in the tests is an assessment, not a measurement.

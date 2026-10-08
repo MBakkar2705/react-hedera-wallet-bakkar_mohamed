@@ -1,0 +1,29 @@
+import { request } from "./api";
+
+// Shapes of the backend responses (see accounts.service.ts and the README).
+// TypeScript does not check them at runtime: they describe what we expect.
+export interface CreatedAccount {
+  accountId: string;
+  publicKey: string;
+  privateKey: string;
+  initialBalance: number;
+}
+
+export interface AccountInfo {
+  accountId: string;
+  // Already formatted by the backend: the amount followed by the HBAR symbol.
+  hbarBalance: string;
+  // Token IDs, as returned by getAccountInfo in the backend.
+  tokenAssociations: string[];
+}
+
+export function createAccount(initialBalance: number): Promise<CreatedAccount> {
+  return request<CreatedAccount>("/accounts", {
+    method: "POST",
+    body: JSON.stringify({ initialBalance }),
+  });
+}
+
+export function getAccount(accountId: string): Promise<AccountInfo> {
+  return request<AccountInfo>(`/accounts/${encodeURIComponent(accountId)}`);
+}
