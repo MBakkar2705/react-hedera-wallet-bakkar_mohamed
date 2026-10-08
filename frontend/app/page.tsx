@@ -15,6 +15,11 @@ export default function Home() {
             Accounts
           </Link>
         </li>
+        <li>
+          <Link href="/transfer" className="font-medium underline">
+            Transfer HBAR
+          </Link>
+        </li>
       </ul>
     </main>
   );

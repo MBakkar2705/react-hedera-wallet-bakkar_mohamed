@@ -3,21 +3,25 @@
 import { useState, type FormEvent } from "react";
 import { getErrorMessage } from "@/lib/api";
 import {
+  ACCOUNT_ID_PATTERN,
   createAccount,
   getAccount,
   type AccountInfo,
   type CreatedAccount,
 } from "@/lib/accounts";
+import {
+  INACTIVITY_LIMIT_MINUTES,
+  useActiveAccount,
+} from "@/lib/active-account";
 
 const inputClass =
   "w-full rounded border border-black/20 bg-transparent px-3 py-2 dark:border-white/25";
 const buttonClass =
   "rounded bg-foreground px-4 py-2 text-background disabled:opacity-50";
 
-// Hedera account IDs look like 0.0.123456.
-const ACCOUNT_ID_PATTERN = /^\d+\.\d+\.\d+$/;
-
 export default function AccountsPage() {
+  const { activate } = useActiveAccount();
+
   // Create an account
   const [balanceInput, setBalanceInput] = useState("10");
   const [creating, setCreating] = useState(false);
@@ -29,6 +33,11 @@ export default function AccountsPage() {
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [info, setInfo] = useState<AccountInfo | null>(null);
+
+  // Use an existing account
+  const [activateIdInput, setActivateIdInput] = useState("");
+  const [activateKeyInput, setActivateKeyInput] = useState("");
+  const [activateError, setActivateError] = useState<string | null>(null);
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,6 +85,26 @@ export default function AccountsPage() {
     }
   }
 
+  function handleActivate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const accountId = activateIdInput.trim();
+    const privateKey = activateKeyInput.trim();
+    if (!ACCOUNT_ID_PATTERN.test(accountId)) {
+      setActivateError("Enter an account ID like 0.0.123456.");
+      return;
+    }
+    if (privateKey === "") {
+      setActivateError("Enter the private key of this account.");
+      return;
+    }
+
+    activate({ accountId, privateKey });
+    setActivateError(null);
+    // The key must not stay in the form once it is in the active account.
+    setActivateKeyInput("");
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
@@ -116,6 +145,18 @@ export default function AccountsPage() {
             <button
               type="button"
               className={buttonClass}
+              onClick={() =>
+                activate({
+                  accountId: created.accountId,
+                  privateKey: created.privateKey,
+                })
+              }
+            >
+              Use this account
+            </button>
+            <button
+              type="button"
+              className={buttonClass}
               onClick={() => setCreated(null)}
             >
               Hide the keys
@@ -152,6 +193,47 @@ export default function AccountsPage() {
             <p>Token associations: {info.tokenAssociations.length}</p>
           </div>
         )}
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xl font-medium">Use an existing account</h2>
+        <form onSubmit={handleActivate} className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1">
+            <span>Account ID</span>
+            <input
+              className={inputClass}
+              value={activateIdInput}
+              onChange={(event) => setActivateIdInput(event.target.value)}
+              placeholder="0.0.123456"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span>Private key (testnet only)</span>
+            {/* Not type="password": the browser would offer to save the key
+                in its password manager. The characters are hidden with CSS. */}
+            <input
+              className={`${inputClass} [-webkit-text-security:disc]`}
+              type="text"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              value={activateKeyInput}
+              onChange={(event) => setActivateKeyInput(event.target.value)}
+            />
+          </label>
+          <button type="submit" className={buttonClass}>
+            Use this account
+          </button>
+        </form>
+
+        {activateError && <p role="alert">{activateError}</p>}
+
+        <p>
+          The active account is kept in memory only. It is forgotten when you
+          click Forget, after {INACTIVITY_LIMIT_MINUTES} minutes without a
+          click or key press, or when you reload the page.
+        </p>
       </section>
     </main>
   );

@@ -17,6 +17,9 @@ export interface AccountInfo {
   tokenAssociations: string[];
 }
 
+// Hedera account IDs look like 0.0.123456.
+export const ACCOUNT_ID_PATTERN = /^\d+\.\d+\.\d+$/;
+
 export function createAccount(initialBalance: number): Promise<CreatedAccount> {
   return request<CreatedAccount>("/accounts", {
     method: "POST",

@@ -263,8 +263,8 @@ transfer(@Body() dto: TransferHbarDto) {
 Service logic:
 
 - Uses the Hedera SDK to create a TransferTransaction
-- Debits the sender account (senderAccountId)
-- Credits the recipient (receiverAccountId)
+- Debits the sender account (fromAccountId)
+- Credits the recipient (toAccountId)
 - Signs the transaction with the sender’s private key
 - Executes the transaction and retrieves the receipt
 - Returns:
@@ -276,28 +276,28 @@ Service logic:
 
 Required DTO fields:
 
-- senderAccountId: string
-- senderPrivateKey: string
-- receiverAccountId: string
-- amount: number (≥ 0)
+- fromAccountId: string
+- fromPrivateKey: string
+- toAccountId: string
+- amount: number (≥ 1)
 
 Test command:
 
-curl.exe -X POST http://localhost:3000/accounts/transfer -H "Content-Type: application/json" -d "{\"senderAccountId\":\"0.0.6372035\",\"senderPrivateKey\":\"302e0201...fc705d2e0\",\"receiverAccountId\":\"0.0.6092520\",\"amount\":20}"
+curl.exe -X POST http://localhost:3000/accounts/transfer -H "Content-Type: application/json" -d "{\"fromAccountId\":\"0.0.10937780\",\"fromPrivateKey\":\"<private key>\",\"toAccountId\":\"0.0.10937901\",\"amount\":1}"
 
 Sample response:
 
 {
   "status": "SUCCESS",
-  "transactionId": "0.0.6372035@1752897107.714651438",
-  "from": "0.0.6372035",
-  "to": "0.0.6092520",
-  "amount": 20
+  "transactionId": "0.0.10937780@1791480449.935752603",
+  "from": "0.0.10937780",
+  "to": "0.0.10937901",
+  "amount": "1 ℏ"
 }
 
 Outcome:
 
-20 HBAR were successfully transferred from account 0.0.6372035 to account 0.0.6092520.
+1 HBAR was successfully transferred from account 0.0.10937780 to account 0.0.10937901. The values above are the ones displayed by the frontend transfer screen, and the balance of the recipient went from 1 to 2 HBAR.
 The transaction was finalized on the Hedera testnet and logged in the TransferEntity table in hedera-wallet.db
 It - Can be inspected via VS Code SQLite Viewer in transfer_entity table
 
@@ -734,7 +734,9 @@ Both pairs can hold the same testnet account. The application exits at startup i
 
 The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0002](docs/adr/0002-frontend-integration-in-the-repository.md).
 
-Current state: work in progress. The accounts screen (`/accounts`) creates an account and looks up its balance. It was tested by hand in a browser against the running backend. Lint and build pass. Planned screens: HBAR transfer, tokens, topic messages.
+Current state: work in progress. Two screens, tested by hand in a browser against the running backend: the accounts screen (`/accounts`) creates an account, looks up a balance and chooses the active account, and the transfer screen (`/transfer`) sends HBAR from the active account. Lint and build pass. Planned screens: tokens, topic messages.
+
+Active account: to sign an operation, the user activates an account (account ID and private key) on `/accounts`. It is held in React state (`frontend/lib/active-account.tsx`), the top bar shows the account ID only, and the key is typed in a masked text field (not a password field, so that the browser does not offer to save it). It is forgotten when the user clicks Forget, after 5 minutes without a click or key press (checked by hand), or when the page is loaded again. See [ADR 0005](docs/adr/0005-active-account-in-memory.md).
 
 The API address is defined in one place, `frontend/lib/api.ts` (variable `NEXT_PUBLIC_API_URL`, default `http://localhost:3000`).
 
@@ -748,7 +750,7 @@ The frontend runs on http://localhost:3001 and the backend on http://localhost:3
 
 CORS: the backend allows a single origin, http://localhost:3001 (`src/main.ts`). This was checked with curl and from the accounts page in a browser: the browser sent a preflight request (204) before the POST (201).
 
-Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md).
+Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md) and [ADR 0005](docs/adr/0005-active-account-in-memory.md).
 
 ---
 
@@ -973,7 +975,7 @@ The following endpoints — POST /accounts, GET /accounts/:accountId, and POST /
 - @ApiBody() and @ApiParam() decorators referencing:
 
 	- CreateAccountDto (initialBalance)
-	- TransferHbarDto (senderAccountId, senderPrivateKey, receiverAccountId, amount)
+	- TransferHbarDto (fromAccountId, fromPrivateKey, toAccountId, amount)
 	- @ApiParam('accountId') for path variable in GET requests
 
 - @ApiResponse() annotations aligned per route:
@@ -1131,6 +1133,7 @@ Design decisions are recorded in `docs/adr/`, one file per decision, following t
 - [ADR 0002: Frontend integration in the repository](docs/adr/0002-frontend-integration-in-the-repository.md)
 - [ADR 0003: Environment variables](docs/adr/0003-environment-variables.md)
 - [ADR 0004: Rules for the AI coding assistant](docs/adr/0004-ai-assistant-rules.md)
+- [ADR 0005: Active account held in memory](docs/adr/0005-active-account-in-memory.md)
 
 ---
 
