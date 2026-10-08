@@ -1,4 +1,4 @@
-# Hedera Minimalist Wallet – Backend API
+# Hedera Minimalist Wallet
 
 ## Table of contents
 
@@ -8,10 +8,13 @@
 - [Progress Details](#progress-details)
 - [Project Structure](#project-structure)
 - [Local Persistence (SQLite)](#local-persistence-sqlite)
+- [Environment Variables](#environment-variables)
+- [Frontend](#frontend)
 - [Setup Instructions](#setup-instructions)
 - [Running Tests](#running-tests)
 - [Swagger Access](#swagger-access)
 - [Docker and CI](#docker-and-ci)
+- [Architecture Decision Records](#architecture-decision-records)
 - [Author](#author)
 
 ## Description
@@ -28,6 +31,8 @@ Main features:
 - Token transfers
 - Topic creation and messaging via Hedera Consensus Service
 
+Repository layout: the NestJS backend is at the repository root (`src/`). A Next.js frontend is being added in `frontend/` (work in progress).
+
 ---
 
 ## Tech Stack
@@ -39,6 +44,14 @@ Main features:
 - SQLite (local data storage)
 - Jest (unit testing)
 - Swagger (API documentation)
+
+Frontend (in progress):
+
+- Next.js 16.4.0 (App Router, Turbopack)
+- React 19.3.0
+- TypeScript
+- Tailwind CSS 4
+- ESLint 9
 
 ---
 
@@ -698,8 +711,41 @@ This method applies to all future entities stored in SQLite
 
 ## Prerequisites
 
-- Node.js >= 16.x
+- Node.js >= 20.9 (required by the Next.js frontend)
 - pnpm >= 7.x
+
+---
+
+## Environment Variables
+
+Credentials are read from a `.env` file. Create it from the template and fill in your own Hedera testnet values:
+
+copy .env.example .env
+
+- `OPERATOR_ID`, `OPERATOR_KEY`: read by the Hedera module and the tokens service.
+- `HEDERA_ACCOUNT_ID`, `HEDERA_PRIVATE_KEY`: read by the accounts service.
+
+Both pairs can hold the same testnet account. The application exits at startup if `OPERATOR_ID`, `OPERATOR_KEY` or `HEDERA_PRIVATE_KEY` is missing. Use a testnet account only. See [ADR 0003](docs/adr/0003-environment-variables.md).
+
+---
+
+## Frontend
+
+The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0002](docs/adr/0002-frontend-integration-in-the-repository.md).
+
+Current state: work in progress. The project was created with create-next-app and lint and build pass. The page is still the default one: no wallet screen exists yet. Planned screens: accounts, HBAR transfer, tokens, topic messages.
+
+Scripts defined in `frontend/package.json`: dev, build, start, lint.
+
+Start the frontend from the repository root:
+
+pnpm --filter frontend dev
+
+The frontend runs on http://localhost:3001 and the backend on http://localhost:3000.
+
+CORS: the backend allows a single origin, http://localhost:3001 (`src/main.ts`). This was checked with curl; it has not been tested yet from a page in a browser.
+
+Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend will keep keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md).
 
 ---
 
@@ -1064,13 +1110,24 @@ Build the image:
 docker build -t hedera-wallet .
 
 Credentials are not included in the image (.env is excluded by .dockerignore).
-Running the container requires OPERATOR_ID and OPERATOR_KEY, provided at runtime:
+Running the container requires the four variables described in [Environment Variables](#environment-variables), provided at runtime:
 
 docker run --rm -p 3000:3000 --env-file .env hedera-wallet
 
 Without these variables, the application exits at startup.
 
 The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies with pnpm and runs pnpm test on every push and pull request.
+
+---
+
+## Architecture Decision Records
+
+Design decisions are recorded in `docs/adr/`, one file per decision, following the template [0000-template.md](docs/adr/0000-template.md). Each record has a Verification section that separates what was proven from what was not.
+
+- [ADR 0001: Private keys in the frontend](docs/adr/0001-private-keys-in-the-frontend.md)
+- [ADR 0002: Frontend integration in the repository](docs/adr/0002-frontend-integration-in-the-repository.md)
+- [ADR 0003: Environment variables](docs/adr/0003-environment-variables.md)
+- [ADR 0004: Rules for the AI coding assistant](docs/adr/0004-ai-assistant-rules.md)
 
 ---
 
@@ -1085,5 +1142,4 @@ The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies wit
 ## Author
 
 Developped by Mohamed Bakkar  
-
 
