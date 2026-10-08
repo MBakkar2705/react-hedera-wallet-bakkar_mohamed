@@ -13,6 +13,7 @@ hedera-wallet
 .git
 .github
 test
+frontend
 *.md
 .idea
 .vscode
