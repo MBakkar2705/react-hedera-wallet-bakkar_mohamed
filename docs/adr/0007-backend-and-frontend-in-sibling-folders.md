@@ -55,10 +55,10 @@ Two paths in the code are relative to the folder the backend is started from, so
 - Ctrl+C did not stop the container: it appeared in `docker ps` and `docker stop` was needed.
 - From the topics page of the frontend, the messages of the topic created from Swagger were listed (1 message). After a message was published from the page, the list showed 2 messages.
 - `pnpm --filter frontend lint` reports nothing and `pnpm --filter frontend build` succeeds with six routes.
+- The CI on GitHub, with the backend tests and the frontend lint and build, is green on the branch `refactor/backend-folder`, then on `feature/frontend-nextjs` after the fast-forward merge (reported by the author).
 
 ### Not proven
 
-- The CI on GitHub with the new workflow: it was not run yet when this record was written.
 - No request was sent to the containerized backend: only its startup and the display of Swagger were checked. The place of its database file inside the container was not inspected.
 - The cause of the changed transitive versions, and of Ctrl+C not stopping the container.
 - A fresh clone: `git clone`, `backend/.env` created from the template, `pnpm install` and start.

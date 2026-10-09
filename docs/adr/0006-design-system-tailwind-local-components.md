@@ -34,6 +34,7 @@ The four screens were first built with Tailwind classes copied from page to page
 
 ### Proven
 
+- No dependency was added: `git status` before the commit listed neither `frontend/package.json` nor `pnpm-lock.yaml`.
 - `pnpm --filter frontend lint` reports nothing and `pnpm --filter frontend build` succeeds on the final version, with the routes `/`, `/accounts`, `/transfer`, `/tokens`, `/topics` and `/_not-found`.
 - In Edge, the home page, the accounts page, the transfer page, the tokens page (create and associate) and the topics page were displayed and found readable by the user. The sticky header stays visible when the window is reduced.
 - At a narrow window width, all the screens (home, accounts, transfer, tokens, topics) were checked by the user.
@@ -47,4 +48,3 @@ The four screens were first built with Tailwind classes copied from page to page
 - The dark mode was not displayed.
 - Other browsers than Edge, including the CSS masking of the key field (see ADR 0005).
 - A token transfer from the operator account with the redesigned tokens page was not reported.
-- That no dependency was added: the `git diff` of `frontend/package.json` and `pnpm-lock.yaml` must be checked in the commit.

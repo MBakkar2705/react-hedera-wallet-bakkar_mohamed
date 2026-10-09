@@ -2,6 +2,7 @@
 
 - Status: Accepted (the paths of rules 4, 7 and 8 amended by ADR 0007: `src/` is now `backend/src/`, and the protected backend files are in `backend/`)
 - Date: 2026-10-08
+- Note (2026-10-09): the last item of "Not proven" says that no frontend code exists. The frontend has four screens now (see ADR 0005 and ADR 0006), and the question of that item is still not proven.
 
 ## Context
 

@@ -5,23 +5,26 @@
 - [Description](#description)
 - [Tech Stack](#tech-stack)
 - [Features & Progress](#features--progress)
-- [Progress Details](#progress-details)
+- [Backend Progress Details](#backend-progress-details)
 - [Project Structure](#project-structure)
 - [Local Persistence (SQLite)](#local-persistence-sqlite)
+- [Prerequisites](#prerequisites)
 - [Environment Variables](#environment-variables)
 - [Frontend](#frontend)
 - [Setup Instructions](#setup-instructions)
+- [curl.exe Quick Reference (Windows CMD)](#curlexe-quick-reference-windows-cmd)
 - [Running Tests](#running-tests)
 - [Swagger Access](#swagger-access)
 - [Docker and CI](#docker-and-ci)
 - [Architecture Decision Records](#architecture-decision-records)
+- [Notes](#notes)
 - [Author](#author)
 
 ## Description
 
-This backend API, built with NestJS and TypeScript, provides minimal wallet functionalities for the Hedera testnet. It supports account creation, HBAR transfers, token issuance and association, HTS token transfers, and HCS topic messaging. 
+This repository is a minimal wallet for the Hedera testnet. A REST API built with NestJS and TypeScript (the backend) provides account creation, HBAR transfers, token issuance and association, HTS token transfers, and HCS topic messaging. A Next.js application (the frontend) uses this API through four screens: accounts, transfer, tokens and topics.
 
-All operations are executed via Hedera’s SDK and persisted locally using SQLite. The API is fully documented with Swagger and tested in isolation using Jest.
+All operations are executed via Hedera’s SDK and persisted locally using SQLite. The API is fully documented with Swagger and tested in isolation using Jest. The frontend is checked by lint, build and by hand in a browser. Everything targets the Hedera testnet: use testnet accounts only.
 
 Main features:
 
@@ -30,6 +33,7 @@ Main features:
 - Token creation and association
 - Token transfers
 - Topic creation and messaging via Hedera Consensus Service
+- A web interface for these operations (accounts, transfer, tokens, topics)
 
 Repository layout: the NestJS backend is in `backend/` and the Next.js frontend is in `frontend/`. Both are members of one pnpm workspace: `pnpm-workspace.yaml`, `pnpm-lock.yaml` and a minimal `package.json` are at the repository root. See [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md).
 
@@ -37,19 +41,23 @@ Repository layout: the NestJS backend is in `backend/` and the Next.js frontend 
 
 ## Tech Stack
 
+Both applications:
+
 - TypeScript
-- pnpm (package manager)
+- pnpm (package manager, one workspace)
+
+Backend:
+
 - NestJS (backend framework)
 - @hashgraph/sdk (Hedera SDK)
 - SQLite (local data storage)
 - Jest (unit testing)
 - Swagger (API documentation)
 
-Frontend (in progress):
+Frontend:
 
 - Next.js 16.4.0 (App Router, Turbopack)
 - React 19.3.0
-- TypeScript
 - Tailwind CSS 4
 - ESLint 9
 
@@ -73,12 +81,19 @@ Frontend (in progress):
 | Unit tests with Jest                            | Done        |
 | Swagger documentation generation                | Done        |
 | README completion                               | Done        |
+| Frontend: accounts screen                       | Done        |
+| Frontend: HBAR transfer screen                  | Done        |
+| Frontend: tokens screen                         | Done        |
+| Frontend: topics screen                         | Done        |
+| Frontend: design (Tailwind, local components)   | Done        |
+| Backend and frontend in sibling folders         | Done        |
+| CI: backend tests, frontend lint and build      | Done        |
 
 ---
 
-## Progress Details
+## Backend Progress Details
 
-The steps below keep the paths they had when each step was done. Since the reorganization described in [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md), `src/`, `test/` and the configuration files of the backend are in `backend/`, and the files `.env` and `hedera-wallet.db` are `backend/.env` and `backend/hedera-wallet.db`. The commands `pnpm run start` and `pnpm run test` still work from the repository root.
+The steps below describe the backend. They keep the paths they had when each step was done. Since the reorganization described in [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md), `src/`, `test/` and the configuration files of the backend are in `backend/`, and the files `.env` and `hedera-wallet.db` are `backend/.env` and `backend/hedera-wallet.db`. The commands `pnpm run start` and `pnpm run test` still work from the repository root.
 
 ### Step 1 - Initialization of the NestJS project
 
@@ -107,7 +122,7 @@ We generated an accounts module, controller and service via the Nest CLI.
 
 A CreateAccountDto was created to type incoming payloads.  
 
-In AccountsService, we implemented createAccoun`, leveraging @hashgraph/sdk to:
+In AccountsService, we implemented `createAccount`, leveraging @hashgraph/sdk to:
 
 - generate a key pair,
 - send an AccountCreateTransaction with the given initialBalance,
@@ -200,7 +215,7 @@ A new Hedera account was successfully created with an initial balance of 10 HBAR
 The account credentials (ID + key pair) are returned and persisted locally in the SQLite Database.
 
 - Stored via the AccountEntity in hedera-wallet.db
-- Inspected visually in the hedra-wallet.db on Visual Code : table accounts
+- Inspected visually in the hedera-wallet.db on Visual Code : table accounts
 
 ---
 
@@ -301,7 +316,7 @@ Outcome:
 
 1 HBAR was successfully transferred from account 0.0.10937780 to account 0.0.10937901. The values above are the ones displayed by the frontend transfer screen, and the balance of the recipient went from 1 to 2 HBAR.
 The transaction was finalized on the Hedera testnet and logged in the TransferEntity table in hedera-wallet.db
-It - Can be inspected via VS Code SQLite Viewer in transfer_entity table
+It can be inspected via VS Code SQLite Viewer in the transfer_entity table
 
 ---
 
@@ -728,7 +743,7 @@ This method applies to all future entities stored in SQLite
 ## Prerequisites
 
 - Node.js >= 20.9 (required by the Next.js frontend)
-- pnpm >= 7.x
+- pnpm 10.11.0, the version pinned in `packageManager` (run `corepack enable` and Node installs it on first use, as the Dockerfile does)
 
 ---
 
@@ -749,7 +764,7 @@ Both pairs can hold the same testnet account. The application exits at startup i
 
 The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0002](docs/adr/0002-frontend-integration-in-the-repository.md).
 
-Current state: work in progress. Four screens, tested by hand in a browser against the running backend: the accounts screen (`/accounts`) creates an account, looks up a balance and chooses the active account, the transfer screen (`/transfer`) sends HBAR from the active account, and the tokens screen (`/tokens`) creates a token, associates the active account with it and transfers tokens, and the topics screen (`/topics`) creates a topic, publishes a message and lists the messages of a topic. The account lookup shows only the number of associated tokens, because the backend returns token IDs only, and the messages of a topic come from the local database of the backend. Lint and build pass. Backend changes that would help the frontend are listed in [docs/backend-evolutions.md](docs/backend-evolutions.md).
+Current state: first version complete. Four screens, tested by hand in a browser against the running backend: the accounts screen (`/accounts`) creates an account, looks up a balance and chooses the active account, the transfer screen (`/transfer`) sends HBAR from the active account, and the tokens screen (`/tokens`) creates a token, associates the active account with it and transfers tokens, and the topics screen (`/topics`) creates a topic, publishes a message and lists the messages of a topic. The account lookup shows only the number of associated tokens, because the backend returns token IDs only, and the messages of a topic come from the local database of the backend. Lint and build pass, locally and in the CI. Backend changes that would help the frontend are listed in [docs/backend-evolutions.md](docs/backend-evolutions.md).
 
 Active account: to sign an operation, the user activates an account (account ID and private key) on `/accounts`. It is held in React state (`frontend/lib/active-account.tsx`), the top bar shows the account ID only, and the key is typed in a masked text field (not a password field, so that the browser does not offer to save it). It is forgotten when the user clicks Forget, after 5 minutes without a click or key press (checked by hand), or when the page is loaded again. See [ADR 0005](docs/adr/0005-active-account-in-memory.md). Tokens created by the backend are held by its operator account, so sending them requires activating that account with its key, typed in the form (Hedera testnet only, see [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md)).
 
@@ -777,6 +792,10 @@ Create `backend/.env` first (see [Environment Variables](#environment-variables)
 
 pnpm install
 pnpm run start
+
+The backend listens on http://localhost:3000 (Swagger at http://localhost:3000/api). In a second terminal, start the frontend, which listens on http://localhost:3001:
+
+pnpm --filter frontend dev
 
 ---
 
@@ -817,7 +836,9 @@ pnpm run test       // Runs all test suites (from the repository root)
 pnpm run test:cov   // Runs all tests and generates coverage report
 
 The coverage report includes detailed metrics per file, function, branch, and line.
-It is stored in /coverage/lcov-report/index.html after execution.
+It is stored in the `coverage` folder of `backend/` (the Jest default, `coverage/lcov-report/index.html`) after execution.
+
+There is no frontend test script yet. The frontend is checked by `pnpm --filter frontend lint`, `pnpm --filter frontend build` and by hand in a browser. The CI runs the lint and the build.
 
 Tests will be structured per service using .spec.ts files under `backend/src/`.
 Coverage confirms execution paths for each feature listed
@@ -977,7 +998,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 const app = await NestFactory.create(AppModule);
 
 const config = new DocumentBuilder()
-  .setTitle('Hedera Wallet API')
+  .setTitle('Hedera Wallet API by M.Bakkar')
   .setDescription('Backend minimalist for Hedera wallet operations')
   .setVersion('1.0')
   .build();
@@ -1158,13 +1179,15 @@ Design decisions are recorded in `docs/adr/`, one file per decision, following t
 
 ## Notes
 
-- All code is strictly typed and structured for testability.
-- Modules are isolated by responsibility (accounts, tokens, topics, etc.).
-- SQLite is used for lightweight storage during development.
+- The frontend runs TypeScript in strict mode (`strict: true`). The backend enables `strictNullChecks` only (`noImplicitAny` is off).
+- Both applications are structured for testability.
+- Backend: modules are isolated by responsibility (accounts, tokens, topics, etc.).
+- Backend: SQLite is used for lightweight storage during development.
+- Frontend: the API address is defined in one place, and no secret is put in the frontend code (see [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md)).
 
 ---
 
 ## Author
 
-Developped by Mohamed Bakkar  
+Developed by Mohamed Bakkar  
 

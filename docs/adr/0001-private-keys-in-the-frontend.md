@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-10-08
+- Note (2026-10-09): written while the frontend was being added; it has four screens now (see ADR 0005 and ADR 0006). The `src/` paths below are `backend/src/` since ADR 0007.
 
 ## Context
 

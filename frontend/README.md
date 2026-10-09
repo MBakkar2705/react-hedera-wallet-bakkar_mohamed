@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend of the Hedera Minimalist Wallet
 
-## Getting Started
+Next.js 16.4.0 application (App Router, React 19.3.0, Tailwind CSS 4). It calls the REST API of the backend, which is in the `backend/` folder at the root of the repository, and has four screens: `/accounts`, `/transfer`, `/tokens` and `/topics`.
 
-First, run the development server:
+## Run
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+From the repository root, with the backend running on http://localhost:3000:
+
+```
+pnpm install
+pnpm --filter frontend dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dev server listens on http://localhost:3001. The backend allows only this origin (CORS).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`dev`, `build`, `start` and `lint` are defined in `package.json`. From the repository root, run them with `pnpm --filter frontend <script>`. There is no test script yet.
 
-## Learn More
+## Configuration
 
-To learn more about Next.js, take a look at the following resources:
+The API address is defined in one place, `lib/api.ts` (variable `NEXT_PUBLIC_API_URL`, default `http://localhost:3000`). Only this public address may use `NEXT_PUBLIC_`: never put a secret there.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## More
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The README at the root of the repository describes the whole project. The private keys, the active account and the design are explained in ADR 0001, ADR 0005 and ADR 0006 in `docs/adr/`.
