@@ -1,5 +1,8 @@
+packages:
+  - backend
+  - frontend
 ignoredBuiltDependencies:
-  - '@nestjs/core'
+  - "@nestjs/core"
   - protobufjs
 onlyBuiltDependencies:
   - sqlite3
