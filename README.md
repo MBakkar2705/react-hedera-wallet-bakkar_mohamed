@@ -31,7 +31,7 @@ Main features:
 - Token transfers
 - Topic creation and messaging via Hedera Consensus Service
 
-Repository layout: the NestJS backend is at the repository root (`src/`). A Next.js frontend is being added in `frontend/` (work in progress).
+Repository layout: the NestJS backend is in `backend/` and the Next.js frontend is in `frontend/`. Both are members of one pnpm workspace: `pnpm-workspace.yaml`, `pnpm-lock.yaml` and a minimal `package.json` are at the repository root. See [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md).
 
 ---
 
@@ -77,6 +77,8 @@ Frontend (in progress):
 ---
 
 ## Progress Details
+
+The steps below keep the paths they had when each step was done. Since the reorganization described in [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md), `src/`, `test/` and the configuration files of the backend are in `backend/`, and the files `.env` and `hedera-wallet.db` are `backend/.env` and `backend/hedera-wallet.db`. The commands `pnpm run start` and `pnpm run test` still work from the repository root.
 
 ### Step 1 - Initialization of the NestJS project
 
@@ -612,27 +614,40 @@ Messages previously submitted to Hedera topic 0.0.6850099 were successfully retr
 
 ## Project Structure
 
-This structure reflects the acttual GitHub repository contents, excluding sensitive and build-specific artifacts
+This structure reflects the actual GitHub repository contents, excluding sensitive and build-specific artifacts
 
 ```plaintext
 react-hedera-wallet-bakkar_mohamed\
-├── test/
-├── src/
-│   ├── app.controller.ts
-│   ├── app.module.ts
-│   ├── app.service.ts
-│   ├── app.controller.spec.ts
-│   ├── main.ts
-│   ├── accounts/
-│   ├── tokens/
-│   ├── topics/
-│   └── hedera/
+├── backend/
+│   ├── src/
+│   │   ├── app.controller.ts
+│   │   ├── app.module.ts
+│   │   ├── app.service.ts
+│   │   ├── app.controller.spec.ts
+│   │   ├── main.ts
+│   │   ├── accounts/
+│   │   ├── tokens/
+│   │   ├── topics/
+│   │   └── hedera/
+│   ├── test/
+│   ├── Dockerfile
+│   ├── .env.example
+│   ├── eslint.config.mjs
+│   ├── jest.config.js
+│   ├── nest-cli.json
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── tsconfig.build.json
+├── frontend/
+├── docs/
+├── .github/workflows/ci.yml
+├── .dockerignore
+├── .gitignore
+├── CLAUDE.md
 ├── README.md
 ├── package.json
-├── tsconfig.json
-├── jest.config.js
-├── pnpm-lock.yml
-├── .gitignore
+├── pnpm-lock.yaml
+└── pnpm-workspace.yaml
 ```
 
 ---
@@ -640,7 +655,7 @@ react-hedera-wallet-bakkar_mohamed\
 ## Local Persistence (SQLite)
 
 This backend uses SQLite to persist Hedera-related entities locally.  
-The database file hedera-wallet.db is automatically created at the root of the project.
+The database file hedera-wallet.db is automatically created in the folder the backend is started from. The path in the code is relative (`database: 'hedera-wallet.db'`), so with `pnpm start` the file is `backend/hedera-wallet.db`.
 
 ---
 
@@ -663,7 +678,7 @@ Entities are defined using TypeORM decorators and synchronized on startup.
 ### Storage Location 
  
 The database file is located at:  
-./hedera-wallet.db
+backend/hedera-wallet.db
 
 ### Configuration  
 
@@ -719,9 +734,9 @@ This method applies to all future entities stored in SQLite
 
 ## Environment Variables
 
-Credentials are read from a `.env` file. Create it from the template and fill in your own Hedera testnet values:
+Credentials are read from a `.env` file in the `backend/` folder (`dotenv` reads the file from the folder the backend is started from, which is `backend/` with `pnpm start`). Create it from the template and fill in your own Hedera testnet values:
 
-copy .env.example .env
+copy backend\.env.example backend\.env
 
 - `OPERATOR_ID`, `OPERATOR_KEY`: read by the Hedera module and the tokens service.
 - `HEDERA_ACCOUNT_ID`, `HEDERA_PRIVATE_KEY`: read by the accounts service.
@@ -750,13 +765,15 @@ pnpm --filter frontend dev
 
 The frontend runs on http://localhost:3001 and the backend on http://localhost:3000.
 
-CORS: the backend allows a single origin, http://localhost:3001 (`src/main.ts`). This was checked with curl and from the accounts page in a browser: the browser sent a preflight request (204) before the POST (201).
+CORS: the backend allows a single origin, http://localhost:3001 (`backend/src/main.ts`). This was checked with curl and from the accounts page in a browser: the browser sent a preflight request (204) before the POST (201).
 
-Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md) and [ADR 0005](docs/adr/0005-active-account-in-memory.md).
+Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`backend/src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md) and [ADR 0005](docs/adr/0005-active-account-in-memory.md).
 
 ---
 
 ## Setup Instructions
+
+Create `backend/.env` first (see [Environment Variables](#environment-variables)), then, from the repository root:
 
 pnpm install
 pnpm run start
@@ -790,24 +807,24 @@ pnpm add -D jest ts-jest @types/jest @nestjs/testing
 
 pnpm exec ts-jest config:init
 
-The generated file jest.config.js serves as the base configuration.
+The generated file `backend/jest.config.js` serves as the base configuration.
 Jest runs in TypeScript mode with auto-discovery of .spec.ts files.
 
 Available commands:
 
-pnpm run test       // Runs all test suites
+pnpm run test       // Runs all test suites (from the repository root)
 
 pnpm run test:cov   // Runs all tests and generates coverage report
 
 The coverage report includes detailed metrics per file, function, branch, and line.
 It is stored in /coverage/lcov-report/index.html after execution.
 
-Tests will be structured per service using .spec.ts files under src/.
+Tests will be structured per service using .spec.ts files under `backend/src/`.
 Coverage confirms execution paths for each feature listed
 
 ### Unit Testing - AppController
 
-The file `src/app.controller.spec.ts` validates the core routing and response behavior of the `AppController`.
+The file `backend/src/app.controller.spec.ts` validates the core routing and response behavior of the `AppController`.
 
 Structure:
 
@@ -836,7 +853,7 @@ Jest coverage confirms full execution of app.controller.ts (100% statements, bra
 
 ### Unit Testing – AccountsService
 
-A dedicated file src/accounts/accounts.service.spec.ts covers the main logic of the AccountsService independently from the Hedera SDK and SQLite.
+A dedicated file backend/src/accounts/accounts.service.spec.ts covers the main logic of the AccountsService independently from the Hedera SDK and SQLite.
 
 Structure:
 
@@ -879,7 +896,7 @@ This partial coverage is acknowledged and will be addressed in future iterations
 
 ### Unit Testing – TokensService
 
-A dedicated file src/tokens/tokens.service.spec.ts covers the full business logic of the TokensService, including creation, association, and transfer functionalities.
+A dedicated file backend/src/tokens/tokens.service.spec.ts covers the full business logic of the TokensService, including creation, association, and transfer functionalities.
 
 Structure:
 
@@ -908,7 +925,7 @@ Jest reports near-full execution of tokens.service.ts: 100% statements, 100% bra
 
 ### Unit Testing – TopicsService
 
-A dedicated file src/topics/topics.service.spec.ts covers the main logic of the TopicsService, including topic creation, message publication and message retrieval, independently from the Hedera SDK and SQLite.
+A dedicated file backend/src/topics/topics.service.spec.ts covers the main logic of the TopicsService, including topic creation, message publication and message retrieval, independently from the Hedera SDK and SQLite.
 
 Structure:
 
@@ -1110,20 +1127,18 @@ This section enables:
 
 ## Docker and CI
 
-A multi-stage Dockerfile builds a production image (Node 22, pnpm via corepack, runs as non-root user).
+A multi-stage Dockerfile (`backend/Dockerfile`) builds a production image of the backend (Node 22, pnpm via corepack, runs as non-root user). The lockfile and the workspace files are at the repository root, so the image is built from the repository root, with `-f` and the final dot (the build context):
 
-Build the image:
+docker build -f backend/Dockerfile -t hedera-wallet .
 
-docker build -t hedera-wallet .
-
-Credentials are not included in the image (.env is excluded by .dockerignore).
+Credentials are not included in the image (`.env` files are excluded by `.dockerignore`).
 Running the container requires the four variables described in [Environment Variables](#environment-variables), provided at runtime:
 
-docker run --rm -p 3000:3000 --env-file .env hedera-wallet
+docker run --rm -p 3000:3000 --env-file backend/.env hedera-wallet
 
-Without these variables, the application exits at startup.
+Without these variables, the application exits at startup. Stop the container with `docker stop`: Ctrl+C in the terminal did not stop it (observed, cause not investigated).
 
-The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies with pnpm and runs pnpm test on every push and pull request.
+The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies with pnpm, runs the backend tests (`pnpm test`), then the lint and the build of the frontend, on every push and pull request.
 
 ---
 
@@ -1137,6 +1152,7 @@ Design decisions are recorded in `docs/adr/`, one file per decision, following t
 - [ADR 0004: Rules for the AI coding assistant](docs/adr/0004-ai-assistant-rules.md)
 - [ADR 0005: Active account held in memory](docs/adr/0005-active-account-in-memory.md)
 - [ADR 0006: Design system with Tailwind tokens and local components](docs/adr/0006-design-system-tailwind-local-components.md)
+- [ADR 0007: Backend and frontend in sibling folders](docs/adr/0007-backend-and-frontend-in-sibling-folders.md)
 
 ---
 

@@ -1,6 +1,6 @@
 # Backend evolutions to consider
 
-Changes in `src/` that would help the frontend or the project. None of them is done. Each item says how it is known: **Observed** (seen when running the application) or **From the code** (read in the source, not tested).
+Changes in `backend/` (mostly `backend/src/`) that would help the frontend or the project. None of them is done. Each item says how it is known: **Observed** (seen when running the application) or **From the code** (read in the source, not tested).
 
 1. **An unknown account returns 500, not 404.** Observed: a lookup of an unknown account ID returns HTTP 500 "Internal server error". From the code: `getAccountInfo` wraps every error in `new Error(...)`. Effect: the frontend can only show a generic message. Needs a proper HTTP exception and tests.
 2. **Other errors are probably 500 too.** From the code: `transferHbar` and the tokens service throw plain errors, and the tokens controller documents a 400 in Swagger. A failing transfer (for example an insufficient balance) was not tried, so the real status is not known.
@@ -10,9 +10,10 @@ Changes in `src/` that would help the frontend or the project. None of them is d
 6. **The treasury of a new token is always the operator account.** From the code: `createToken` uses the operator account as treasury and admin key. To send the new tokens, the operator key must be typed in the frontend (see ADR 0001).
 7. **No authentication, and keys in request bodies.** ADR 0001 states that the backend has no authentication. The tokens controller has no guard, so anyone who reaches the API can create tokens paid by the operator account. Signing with a wallet is the evolution named in ADR 0001.
 8. **Minimum amounts.** From the DTOs: a HBAR transfer needs `amount >= 1`, so less than 1 HBAR cannot be sent. Token amounts are integers, and tokens are created with 0 decimals.
-9. **The CORS origin is written in the code.** `src/main.ts` allows `http://localhost:3001` only. A deployment would need it to come from a variable.
+9. **The CORS origin is written in the code.** `backend/src/main.ts` allows `http://localhost:3001` only. A deployment would need it to come from a variable.
 10. **Two pairs of environment variables** (`OPERATOR_*` and `HEDERA_*`) for what can be one account (ADR 0003).
-11. **Folder layout.** The backend is at the repository root. Moving it to `backend/` is postponed (ADR 0002, decision 6).
+11. **The backend lint and the e2e test cannot run.** From the code: `backend/eslint.config.mjs` imports `@eslint/js`, `typescript-eslint`, `eslint-plugin-prettier` and `globals`, none of which is declared in `backend/package.json`, and there is no lint script. `backend/test/app.e2e-spec.ts` imports `supertest`, which is not declared either. Observed: `pnpm test` runs 4 suites and the e2e file is not among them. Neither was run.
 12. **A Jest warning** ("worker process has failed to exit gracefully") appeared once, with an unknown cause (ADR 0002).
 13. **Reading the messages of a topic without any message returns 500.** Observed: the messages of a new topic give "Internal server error" on the page, which is the message of an HTTP 500 (the status was not looked at in the Network tab). From the code: `getMessages` throws a plain error when the list is empty, and Swagger documents a 404. An empty list with a 200 would be the natural answer.
 14. **The messages of a topic come from the local database only.** From the code: `sendMessage` saves each message in SQLite and `getMessages` reads them back from there, so a message published by any other means does not appear. Observed: the two messages published from the application were listed in order.
+15. **Ctrl+C does not stop the Docker container.** Observed: after the documented `docker run` command, Ctrl+C in the terminal left the container running and `docker stop` was needed. The cause was not investigated. The `--init` option of `docker run` is a possibility to test.

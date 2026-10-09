@@ -1,22 +1,23 @@
 # Dependencies and build output are produced inside the image
-node_modules
-dist
-coverage
+**/node_modules
+**/dist
+**/coverage
 
 # Secrets and local data must never enter the build context
-.env
-.env.*
-*.db
-hedera-wallet
+**/.env
+**/.env.*
+**/*.db
+**/hedera-wallet
 
-# Not needed to build or run the app
+# Not needed to build or run the backend
 .git
 .github
-test
 frontend
-*.md
+docs
+backend/test
+**/*.md
 .idea
 .vscode
 .DS_Store
-Dockerfile
+backend/Dockerfile
 .dockerignore

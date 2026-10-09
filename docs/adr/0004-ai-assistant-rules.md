@@ -1,6 +1,6 @@
 # ADR 0004: Rules for the AI coding assistant
 
-- Status: Accepted
+- Status: Accepted (the paths of rules 4, 7 and 8 amended by ADR 0007: `src/` is now `backend/src/`, and the protected backend files are in `backend/`)
 - Date: 2026-10-08
 
 ## Context
