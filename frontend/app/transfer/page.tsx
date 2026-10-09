@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { getErrorMessage } from "@/lib/api";
 import { ACCOUNT_ID_PATTERN } from "@/lib/accounts";
 import { useActiveAccount } from "@/lib/active-account";
-import { buttonClass, inputClass } from "@/lib/styles";
 import { transferHbar, type TransferHbarResult } from "@/lib/transfer";
+import { NoActiveAccount } from "@/components/NoActiveAccount";
+import { Button } from "@/components/ui/Button";
+import { Callout } from "@/components/ui/Callout";
+import { CodeValue } from "@/components/ui/CodeValue";
+import { Field, Input } from "@/components/ui/Field";
+import { PageHeader, Panel, PanelList } from "@/components/ui/Panel";
 
 export default function TransferPage() {
   const { account } = useActiveAccount();
@@ -54,58 +58,58 @@ export default function TransferPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Transfer HBAR</h1>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-10">
+      <PageHeader
+        title="Transfer HBAR"
+        description="Send HBAR from the active account to another account."
+      />
 
-      {account ? (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <p>
-            From account: <strong>{account.accountId}</strong>
-          </p>
-          <label className="flex flex-col gap-1">
-            <span>Recipient account ID</span>
-            <input
-              className={inputClass}
-              value={toAccountIdInput}
-              onChange={(event) => setToAccountIdInput(event.target.value)}
-              placeholder="0.0.123456"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>Amount (HBAR, at least 1)</span>
-            <input
-              className={inputClass}
-              value={amountInput}
-              onChange={(event) => setAmountInput(event.target.value)}
-              inputMode="decimal"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={sending}>
-            {sending ? "Sending..." : "Send"}
-          </button>
-        </form>
-      ) : (
-        <p>
-          No active account.{" "}
-          <Link href="/accounts" className="underline">
-            Choose one on the Accounts page
-          </Link>{" "}
-          first.
-        </p>
-      )}
+      <PanelList>
+        <Panel
+          title="Send HBAR"
+          description="Signed with the active account. The amount must be at least 1 HBAR."
+        >
+          {account ? (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <p>
+                From account:{" "}
+                <strong className="font-mono">{account.accountId}</strong>
+              </p>
+              <Field label="Recipient account ID">
+                <Input
+                  value={toAccountIdInput}
+                  onChange={(event) => setToAccountIdInput(event.target.value)}
+                  placeholder="0.0.123456"
+                />
+              </Field>
+              <Field label="Amount (HBAR, at least 1)">
+                <Input
+                  value={amountInput}
+                  onChange={(event) => setAmountInput(event.target.value)}
+                  inputMode="decimal"
+                />
+              </Field>
+              <Button type="submit" disabled={sending}>
+                {sending ? "Sending..." : "Send"}
+              </Button>
+            </form>
+          ) : (
+            <NoActiveAccount />
+          )}
 
-      {error && <p role="alert">{error}</p>}
+          {error && <Callout tone="danger">{error}</Callout>}
 
-      {result && (
-        <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-          <p>Status: {result.status}</p>
-          <p>
-            {result.amount} sent from {result.from} to {result.to}
-          </p>
-          <p>Transaction ID:</p>
-          <code className="break-all">{result.transactionId}</code>
-        </div>
-      )}
+          {result && (
+            <Callout tone="success">
+              <p>Status: {result.status}</p>
+              <p>
+                {result.amount} sent from {result.from} to {result.to}
+              </p>
+              <CodeValue label="Transaction ID" value={result.transactionId} />
+            </Callout>
+          )}
+        </Panel>
+      </PanelList>
     </main>
   );
 }

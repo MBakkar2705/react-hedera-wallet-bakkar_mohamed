@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ActiveAccountProvider } from "@/lib/active-account";
-import { ActiveAccountBar } from "@/components/ActiveAccountBar";
+import { AppHeader } from "@/components/AppHeader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,8 +27,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ActiveAccountProvider>
-          <ActiveAccountBar />
+          <AppHeader />
           {children}
+          <footer className="mx-auto w-full max-w-4xl px-6 py-8 text-sm text-muted">
+            Built on the Hedera testnet. An independent demo, not an official
+            Hedera product.
+          </footer>
         </ActiveAccountProvider>
       </body>
     </html>

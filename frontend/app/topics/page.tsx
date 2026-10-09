@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { getErrorMessage } from "@/lib/api";
-import { buttonClass, inputClass } from "@/lib/styles";
+import { ApiError, getErrorMessage } from "@/lib/api";
 import {
   createTopic,
   getMessages,
@@ -12,6 +11,11 @@ import {
   type SentMessage,
   type TopicMessage,
 } from "@/lib/topics";
+import { Button } from "@/components/ui/Button";
+import { Callout } from "@/components/ui/Callout";
+import { CodeValue } from "@/components/ui/CodeValue";
+import { Field, Input, Textarea } from "@/components/ui/Field";
+import { PageHeader, Panel, PanelList } from "@/components/ui/Panel";
 
 export default function TopicsPage() {
   // Create a topic
@@ -32,15 +36,25 @@ export default function TopicsPage() {
   const [loading, setLoading] = useState(false);
   const [readError, setReadError] = useState<string | null>(null);
   const [messages, setMessages] = useState<TopicMessage[] | null>(null);
+  // The topic the displayed messages belong to.
+  const [loadedTopicId, setLoadedTopicId] = useState<string | null>(null);
 
   async function loadMessages(topicId: string) {
     setLoading(true);
     setReadError(null);
     setMessages(null);
+    setLoadedTopicId(null);
     try {
       setMessages(await getMessages(topicId));
+      setLoadedTopicId(topicId);
     } catch (caught) {
-      setReadError(getErrorMessage(caught));
+      const text = getErrorMessage(caught);
+      // The backend answers 500 when a topic has no message yet.
+      setReadError(
+        caught instanceof ApiError && caught.status === 500
+          ? `${text.replace(/\.$/, "")}. The backend also returns this error when a topic has no message yet.`
+          : text,
+      );
     } finally {
       setLoading(false);
     }
@@ -58,6 +72,12 @@ export default function TopicsPage() {
       // Pre-fill the next forms with the new topic.
       setSendTopicInput(topic.topicId);
       setReadTopicInput(topic.topicId);
+      // What is displayed below belongs to the previous topic.
+      setSent(null);
+      setSendError(null);
+      setMessages(null);
+      setLoadedTopicId(null);
+      setReadError(null);
     } catch (caught) {
       setCreateError(getErrorMessage(caught));
     } finally {
@@ -108,120 +128,126 @@ export default function TopicsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Topics</h1>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-10">
+      <PageHeader
+        title="Topics"
+        description="Create a topic, publish messages to it and read them back."
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Create a topic</h2>
-        <form onSubmit={handleCreate} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Memo (optional)</span>
-            <input
-              className={inputClass}
-              value={memoInput}
-              onChange={(event) => setMemoInput(event.target.value)}
-              placeholder="My first topic"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={creating}>
-            {creating ? "Creating..." : "Create topic"}
-          </button>
-        </form>
+      <PanelList>
+        <Panel
+          title="Create a topic"
+          description="A topic is a channel for messages on the Hedera network. The memo is optional."
+        >
+          <form onSubmit={handleCreate} className="flex flex-col gap-4">
+            <Field label="Memo (optional)">
+              <Input
+                value={memoInput}
+                onChange={(event) => setMemoInput(event.target.value)}
+                placeholder="My first topic"
+              />
+            </Field>
+            <Button type="submit" disabled={creating}>
+              {creating ? "Creating..." : "Create topic"}
+            </Button>
+          </form>
 
-        {createError && <p role="alert">{createError}</p>}
+          {createError && <Callout tone="danger">{createError}</Callout>}
 
-        {created && (
-          <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>
-              Topic <strong>{created.topicId}</strong> created
-              {created.memo ? ` with the memo "${created.memo}"` : ""}.
-            </p>
-          </div>
-        )}
-      </section>
+          {created && (
+            <Callout tone="success">
+              <p>
+                Topic <strong>{created.topicId}</strong> created
+                {created.memo ? ` with the memo "${created.memo}"` : ""}.
+              </p>
+              <CodeValue label="Topic ID" value={created.topicId} />
+            </Callout>
+          )}
+        </Panel>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Publish a message</h2>
-        <form onSubmit={handleSend} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Topic ID</span>
-            <input
-              className={inputClass}
-              value={sendTopicInput}
-              onChange={(event) => setSendTopicInput(event.target.value)}
-              placeholder="0.0.123456"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>Message</span>
-            <textarea
-              className={inputClass}
-              rows={3}
-              value={messageInput}
-              onChange={(event) => setMessageInput(event.target.value)}
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={sending}>
-            {sending ? "Publishing..." : "Publish"}
-          </button>
-        </form>
+        <Panel
+          title="Publish a message"
+          description="The backend signs the message with its operator account."
+        >
+          <form onSubmit={handleSend} className="flex flex-col gap-4">
+            <Field label="Topic ID">
+              <Input
+                value={sendTopicInput}
+                onChange={(event) => setSendTopicInput(event.target.value)}
+                placeholder="0.0.123456"
+              />
+            </Field>
+            <Field label="Message">
+              <Textarea
+                rows={3}
+                value={messageInput}
+                onChange={(event) => setMessageInput(event.target.value)}
+              />
+            </Field>
+            <Button type="submit" disabled={sending}>
+              {sending ? "Publishing..." : "Publish"}
+            </Button>
+          </form>
 
-        {sendError && <p role="alert">{sendError}</p>}
+          {sendError && <Callout tone="danger">{sendError}</Callout>}
 
-        {sent && (
-          <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>Message published to topic {sent.topicId}.</p>
-            <p>Transaction ID:</p>
-            <code className="break-all">{sent.transactionId}</code>
-          </div>
-        )}
-      </section>
+          {sent && (
+            <Callout tone="success">
+              <p>Message published to topic {sent.topicId}.</p>
+              <CodeValue label="Transaction ID" value={sent.transactionId} />
+            </Callout>
+          )}
+        </Panel>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Messages of a topic</h2>
-        <p>
-          The messages come from the local database of the backend, so only the
-          messages published through this application appear.
-        </p>
-        <form onSubmit={handleRead} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Topic ID</span>
-            <input
-              className={inputClass}
-              value={readTopicInput}
-              onChange={(event) => setReadTopicInput(event.target.value)}
-              placeholder="0.0.123456"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={loading}>
-            {loading ? "Loading..." : "Load messages"}
-          </button>
-        </form>
+        <Panel
+          title="Messages of a topic"
+          description="The messages come from the local database of the backend, so only the messages published through this application appear."
+        >
+          <form onSubmit={handleRead} className="flex flex-col gap-4">
+            <Field label="Topic ID">
+              <Input
+                value={readTopicInput}
+                onChange={(event) => setReadTopicInput(event.target.value)}
+                placeholder="0.0.123456"
+              />
+            </Field>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Loading..." : "Load messages"}
+            </Button>
+          </form>
 
-        {readError && (
-          <p role="alert">
-            {readError} The backend also returns an error when a topic has no
-            message yet.
-          </p>
-        )}
+          {readError && (
+            <Callout tone="danger">
+              <p>{readError}</p>
+            </Callout>
+          )}
 
-        {messages && (
-          <ul className="flex flex-col gap-3">
-            {messages.map((item) => (
-              <li
-                key={item.id}
-                className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25"
-              >
-                <p>{item.message}</p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {new Date(item.createdAt).toLocaleString()}
-                </p>
-                <code className="break-all text-sm">{item.transactionId}</code>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          {messages && (
+            <div className="flex flex-col gap-3">
+              <p className="font-medium">
+                Topic <span className="font-mono">{loadedTopicId}</span>:{" "}
+                {messages.length} {messages.length === 1 ? "message" : "messages"}
+              </p>
+              <ul className="flex flex-col gap-3">
+                {messages.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-col gap-1 rounded-xl border border-line bg-surface p-4"
+                  >
+                    <p>{item.message}</p>
+                    <p className="text-sm text-muted">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </p>
+                    <code className="break-all font-mono text-sm text-muted">
+                      {item.transactionId}
+                    </code>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Panel>
+      </PanelList>
     </main>
   );
 }

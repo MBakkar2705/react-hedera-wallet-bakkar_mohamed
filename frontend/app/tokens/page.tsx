@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { getErrorMessage } from "@/lib/api";
 import { ACCOUNT_ID_PATTERN } from "@/lib/accounts";
 import { useActiveAccount } from "@/lib/active-account";
-import { buttonClass, inputClass } from "@/lib/styles";
 import {
   associateToken,
   createToken,
@@ -15,6 +13,12 @@ import {
   type CreatedToken,
   type TransferTokenResult,
 } from "@/lib/tokens";
+import { NoActiveAccount } from "@/components/NoActiveAccount";
+import { Button } from "@/components/ui/Button";
+import { Callout } from "@/components/ui/Callout";
+import { CodeValue } from "@/components/ui/CodeValue";
+import { Field, Input } from "@/components/ui/Field";
+import { PageHeader, Panel, PanelList } from "@/components/ui/Panel";
 
 export default function TokensPage() {
   const { account } = useActiveAccount();
@@ -156,169 +160,157 @@ export default function TokensPage() {
     }
   }
 
-  const noActiveAccount = (
-    <p>
-      No active account.{" "}
-      <Link href="/accounts" className="underline">
-        Choose one on the Accounts page
-      </Link>{" "}
-      first.
-    </p>
-  );
-
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Tokens</h1>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-10">
+      <PageHeader
+        title="Tokens"
+        description="Create a token, associate an account with it, and send tokens between accounts."
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Create a token</h2>
-        <p>
-          The new tokens are held by the operator account of the backend. To
-          send them to another account, activate the operator account on the
-          Accounts page.
-        </p>
-        <form onSubmit={handleCreate} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Name</span>
-            <input
-              className={inputClass}
-              value={nameInput}
-              onChange={(event) => setNameInput(event.target.value)}
-              placeholder="MyToken"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>Symbol</span>
-            <input
-              className={inputClass}
-              value={symbolInput}
-              onChange={(event) => setSymbolInput(event.target.value)}
-              placeholder="MTK"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>Initial supply (whole number, at least 1)</span>
-            <input
-              className={inputClass}
-              value={supplyInput}
-              onChange={(event) => setSupplyInput(event.target.value)}
-              inputMode="numeric"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={creating}>
-            {creating ? "Creating..." : "Create token"}
-          </button>
-        </form>
-
-        {createError && <p role="alert">{createError}</p>}
-
-        {created && (
-          <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>
-              Token <strong>{created.tokenId}</strong> created: {created.name} (
-              {created.symbol}), supply {created.initialSupply}.
-            </p>
-          </div>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Associate the active account</h2>
-        {account ? (
-          <form onSubmit={handleAssociate} className="flex flex-col gap-3">
-            <p>
-              Account: <strong>{account.accountId}</strong>
-            </p>
-            <label className="flex flex-col gap-1">
-              <span>Token ID</span>
-              <input
-                className={inputClass}
-                value={associateTokenInput}
-                onChange={(event) => setAssociateTokenInput(event.target.value)}
-                placeholder="0.0.123456"
+      <PanelList>
+        <Panel
+          title="Create a token"
+          description="The new tokens are held by the operator account of the backend. To send them to another account, activate the operator account on the Accounts page."
+        >
+          <form onSubmit={handleCreate} className="flex flex-col gap-4">
+            <Field label="Name">
+              <Input
+                value={nameInput}
+                onChange={(event) => setNameInput(event.target.value)}
+                placeholder="MyToken"
               />
-            </label>
-            <button
-              type="submit"
-              className={buttonClass}
-              disabled={associating}
-            >
-              {associating ? "Associating..." : "Associate"}
-            </button>
-          </form>
-        ) : (
-          noActiveAccount
-        )}
-
-        {associateError && <p role="alert">{associateError}</p>}
-
-        {associated && (
-          <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>Status: {associated.status}</p>
-            <p>
-              Account {associated.accountId} associated with token{" "}
-              {associated.tokenId}.
-            </p>
-          </div>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Transfer tokens</h2>
-        {account ? (
-          <form onSubmit={handleTransfer} className="flex flex-col gap-3">
-            <p>
-              From account: <strong>{account.accountId}</strong>
-            </p>
-            <label className="flex flex-col gap-1">
-              <span>Recipient account ID (must be associated with the token)</span>
-              <input
-                className={inputClass}
-                value={toAccountIdInput}
-                onChange={(event) => setToAccountIdInput(event.target.value)}
-                placeholder="0.0.123456"
+            </Field>
+            <Field label="Symbol">
+              <Input
+                value={symbolInput}
+                onChange={(event) => setSymbolInput(event.target.value)}
+                placeholder="MTK"
               />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span>Token ID</span>
-              <input
-                className={inputClass}
-                value={transferTokenInput}
-                onChange={(event) => setTransferTokenInput(event.target.value)}
-                placeholder="0.0.123456"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span>Amount (whole number, at least 1)</span>
-              <input
-                className={inputClass}
-                value={amountInput}
-                onChange={(event) => setAmountInput(event.target.value)}
+            </Field>
+            <Field label="Initial supply (whole number, at least 1)">
+              <Input
+                value={supplyInput}
+                onChange={(event) => setSupplyInput(event.target.value)}
                 inputMode="numeric"
               />
-            </label>
-            <button type="submit" className={buttonClass} disabled={sending}>
-              {sending ? "Sending..." : "Send"}
-            </button>
+            </Field>
+            <Button type="submit" disabled={creating}>
+              {creating ? "Creating..." : "Create token"}
+            </Button>
           </form>
-        ) : (
-          noActiveAccount
-        )}
 
-        {transferError && <p role="alert">{transferError}</p>}
+          {createError && <Callout tone="danger">{createError}</Callout>}
 
-        {transferred && (
-          <div className="flex flex-col gap-1 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>Status: {transferred.status}</p>
-            <p>
-              {transferred.amount} of token {transferred.tokenId} sent from{" "}
-              {transferred.from} to {transferred.to}
-            </p>
-            <p>Transaction ID:</p>
-            <code className="break-all">{transferred.transactionId}</code>
-          </div>
-        )}
-      </section>
+          {created && (
+            <Callout tone="success">
+              <p>
+                Token <strong>{created.tokenId}</strong> created:{" "}
+                {created.name} ({created.symbol}), supply{" "}
+                {created.initialSupply}.
+              </p>
+              <CodeValue label="Token ID" value={created.tokenId} />
+            </Callout>
+          )}
+        </Panel>
+
+        <Panel
+          title="Associate the active account"
+          description="An account must be associated with a token before it can receive it. This uses the active account."
+        >
+          {account ? (
+            <form onSubmit={handleAssociate} className="flex flex-col gap-4">
+              <p>
+                Account:{" "}
+                <strong className="font-mono">{account.accountId}</strong>
+              </p>
+              <Field label="Token ID">
+                <Input
+                  value={associateTokenInput}
+                  onChange={(event) =>
+                    setAssociateTokenInput(event.target.value)
+                  }
+                  placeholder="0.0.123456"
+                />
+              </Field>
+              <Button type="submit" disabled={associating}>
+                {associating ? "Associating..." : "Associate"}
+              </Button>
+            </form>
+          ) : (
+            <NoActiveAccount />
+          )}
+
+          {associateError && <Callout tone="danger">{associateError}</Callout>}
+
+          {associated && (
+            <Callout tone="success">
+              <p>Status: {associated.status}</p>
+              <p>
+                Account {associated.accountId} associated with token{" "}
+                {associated.tokenId}.
+              </p>
+            </Callout>
+          )}
+        </Panel>
+
+        <Panel
+          title="Transfer tokens"
+          description="Sent from the active account. The recipient must be associated with the token first."
+        >
+          {account ? (
+            <form onSubmit={handleTransfer} className="flex flex-col gap-4">
+              <p>
+                From account:{" "}
+                <strong className="font-mono">{account.accountId}</strong>
+              </p>
+              <Field label="Recipient account ID">
+                <Input
+                  value={toAccountIdInput}
+                  onChange={(event) => setToAccountIdInput(event.target.value)}
+                  placeholder="0.0.123456"
+                />
+              </Field>
+              <Field label="Token ID">
+                <Input
+                  value={transferTokenInput}
+                  onChange={(event) =>
+                    setTransferTokenInput(event.target.value)
+                  }
+                  placeholder="0.0.123456"
+                />
+              </Field>
+              <Field label="Amount (whole number, at least 1)">
+                <Input
+                  value={amountInput}
+                  onChange={(event) => setAmountInput(event.target.value)}
+                  inputMode="numeric"
+                />
+              </Field>
+              <Button type="submit" disabled={sending}>
+                {sending ? "Sending..." : "Send"}
+              </Button>
+            </form>
+          ) : (
+            <NoActiveAccount />
+          )}
+
+          {transferError && <Callout tone="danger">{transferError}</Callout>}
+
+          {transferred && (
+            <Callout tone="success">
+              <p>Status: {transferred.status}</p>
+              <p>
+                {transferred.amount} of token {transferred.tokenId} sent from{" "}
+                {transferred.from} to {transferred.to}
+              </p>
+              <CodeValue
+                label="Transaction ID"
+                value={transferred.transactionId}
+              />
+            </Callout>
+          )}
+        </Panel>
+      </PanelList>
     </main>
   );
 }

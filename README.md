@@ -738,6 +738,8 @@ Current state: work in progress. Four screens, tested by hand in a browser again
 
 Active account: to sign an operation, the user activates an account (account ID and private key) on `/accounts`. It is held in React state (`frontend/lib/active-account.tsx`), the top bar shows the account ID only, and the key is typed in a masked text field (not a password field, so that the browser does not offer to save it). It is forgotten when the user clicks Forget, after 5 minutes without a click or key press (checked by hand), or when the page is loaded again. See [ADR 0005](docs/adr/0005-active-account-in-memory.md). Tokens created by the backend are held by its operator account, so sending them requires activating that account with its key, typed in the form (Hedera testnet only, see [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md)).
 
+Design: the colors are defined once in `frontend/app/globals.css` (Tailwind 4 tokens, indigo and violet, dark values defined but not displayed yet). The repeated parts of the interface are local components in `frontend/components/ui/` (`Button`, `Field`, `Panel`, `Callout`, `CodeValue`), and the header, the brand mark and the active account bar are in `frontend/components/`. The design uses Tailwind only, with no UI library. Keys and transaction values have a Copy button with a warning about the clipboard. See [ADR 0006](docs/adr/0006-design-system-tailwind-local-components.md).
+
 The API address is defined in one place, `frontend/lib/api.ts` (variable `NEXT_PUBLIC_API_URL`, default `http://localhost:3000`).
 
 Scripts defined in `frontend/package.json`: dev, build, start, lint.
@@ -1134,6 +1136,7 @@ Design decisions are recorded in `docs/adr/`, one file per decision, following t
 - [ADR 0003: Environment variables](docs/adr/0003-environment-variables.md)
 - [ADR 0004: Rules for the AI coding assistant](docs/adr/0004-ai-assistant-rules.md)
 - [ADR 0005: Active account held in memory](docs/adr/0005-active-account-in-memory.md)
+- [ADR 0006: Design system with Tailwind tokens and local components](docs/adr/0006-design-system-tailwind-local-components.md)
 
 ---
 

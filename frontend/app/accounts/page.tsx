@@ -13,7 +13,11 @@ import {
   INACTIVITY_LIMIT_MINUTES,
   useActiveAccount,
 } from "@/lib/active-account";
-import { buttonClass, inputClass } from "@/lib/styles";
+import { Button } from "@/components/ui/Button";
+import { Callout } from "@/components/ui/Callout";
+import { CodeValue } from "@/components/ui/CodeValue";
+import { Field, Input } from "@/components/ui/Field";
+import { PageHeader, Panel, PanelList } from "@/components/ui/Panel";
 
 export default function AccountsPage() {
   const { activate } = useActiveAccount();
@@ -102,135 +106,135 @@ export default function AccountsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-10 px-6 py-10">
+      <PageHeader
+        title="Accounts"
+        description="Create a testnet account, check a balance, and choose the account that signs your transactions."
+      />
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Create an account</h2>
-        <form onSubmit={handleCreate} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Initial balance (HBAR)</span>
-            <input
-              className={inputClass}
-              value={balanceInput}
-              onChange={(event) => setBalanceInput(event.target.value)}
-              inputMode="decimal"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={creating}>
-            {creating ? "Creating..." : "Create account"}
-          </button>
-        </form>
+      <PanelList>
+        <Panel
+          title="Create an account"
+          description="A new testnet account with the initial balance you choose."
+        >
+          <form onSubmit={handleCreate} className="flex flex-col gap-4">
+            <Field label="Initial balance (HBAR)">
+              <Input
+                value={balanceInput}
+                onChange={(event) => setBalanceInput(event.target.value)}
+                inputMode="decimal"
+              />
+            </Field>
+            <Button type="submit" disabled={creating}>
+              {creating ? "Creating..." : "Create account"}
+            </Button>
+          </form>
 
-        {createError && <p role="alert">{createError}</p>}
+          {createError && <Callout tone="danger">{createError}</Callout>}
 
-        {created && (
-          <div className="flex flex-col gap-2 rounded border border-black/20 p-4 dark:border-white/25">
-            <p>
-              Account <strong>{created.accountId}</strong> created with{" "}
-              {created.initialBalance} HBAR.
-            </p>
-            <p>Public key:</p>
-            <code className="break-all">{created.publicKey}</code>
-            <p>Private key (testnet only):</p>
-            <code className="break-all">{created.privateKey}</code>
-            <p>
-              Copy the private key now. It is kept in this page&apos;s memory
-              only and is lost when you reload or hide it.
-            </p>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() =>
-                activate({
-                  accountId: created.accountId,
-                  privateKey: created.privateKey,
-                })
-              }
-            >
-              Use this account
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() => setCreated(null)}
-            >
-              Hide the keys
-            </button>
-          </div>
-        )}
-      </section>
+          {created && (
+            <Callout tone="success">
+              <p>
+                Account <strong>{created.accountId}</strong> created with{" "}
+                {created.initialBalance} HBAR.
+              </p>
+              <CodeValue label="Public key" value={created.publicKey} />
+              <CodeValue
+                label="Private key (testnet only)"
+                value={created.privateKey}
+                warning="Copying puts the key in the clipboard, which other programs and the Windows clipboard history can read."
+              />
+              <p className="text-sm text-muted">
+                The key is kept in this page&apos;s memory only. It is lost
+                when you reload or hide it.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  onClick={() =>
+                    activate({
+                      accountId: created.accountId,
+                      privateKey: created.privateKey,
+                    })
+                  }
+                >
+                  Use this account
+                </Button>
+                <Button variant="quiet" onClick={() => setCreated(null)}>
+                  Hide the keys
+                </Button>
+              </div>
+            </Callout>
+          )}
+        </Panel>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Look up an account</h2>
-        <form onSubmit={handleLookup} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Account ID</span>
-            <input
-              className={inputClass}
-              value={accountIdInput}
-              onChange={(event) => setAccountIdInput(event.target.value)}
-              placeholder="0.0.123456"
-            />
-          </label>
-          <button type="submit" className={buttonClass} disabled={lookingUp}>
-            {lookingUp ? "Searching..." : "Get balance"}
-          </button>
-        </form>
+        <Panel
+          title="Look up an account"
+          description="Shows the HBAR balance and the number of associated tokens."
+        >
+          <form onSubmit={handleLookup} className="flex flex-col gap-4">
+            <Field label="Account ID">
+              <Input
+                value={accountIdInput}
+                onChange={(event) => setAccountIdInput(event.target.value)}
+                placeholder="0.0.123456"
+              />
+            </Field>
+            <Button type="submit" disabled={lookingUp}>
+              {lookingUp ? "Searching..." : "Get balance"}
+            </Button>
+          </form>
 
-        {lookupError && <p role="alert">{lookupError}</p>}
+          {lookupError && <Callout tone="danger">{lookupError}</Callout>}
 
-        {info && (
-          <div className="rounded border border-black/20 p-4 dark:border-white/25">
-            <p>
-              Account <strong>{info.accountId}</strong>
-            </p>
-            <p>Balance: {info.hbarBalance}</p>
-            <p>Token associations: {info.tokenAssociations.length}</p>
-          </div>
-        )}
-      </section>
+          {info && (
+            <Callout tone="info">
+              <p>
+                Account <strong>{info.accountId}</strong>
+              </p>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt className="text-muted">Balance</dt>
+                <dd className="font-medium tabular-nums">{info.hbarBalance}</dd>
+                <dt className="text-muted">Token associations</dt>
+                <dd className="font-medium tabular-nums">
+                  {info.tokenAssociations.length}
+                </dd>
+              </dl>
+            </Callout>
+          )}
+        </Panel>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-medium">Use an existing account</h2>
-        <form onSubmit={handleActivate} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1">
-            <span>Account ID</span>
-            <input
-              className={inputClass}
-              value={activateIdInput}
-              onChange={(event) => setActivateIdInput(event.target.value)}
-              placeholder="0.0.123456"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>Private key (testnet only)</span>
-            {/* Not type="password": the browser would offer to save the key
-                in its password manager. The characters are hidden with CSS. */}
-            <input
-              className={`${inputClass} [-webkit-text-security:disc]`}
-              type="text"
-              autoComplete="off"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              value={activateKeyInput}
-              onChange={(event) => setActivateKeyInput(event.target.value)}
-            />
-          </label>
-          <button type="submit" className={buttonClass}>
-            Use this account
-          </button>
-        </form>
+        <Panel
+          title="Use an existing account"
+          description={`Kept in memory only. Forgotten when you click Forget, after ${INACTIVITY_LIMIT_MINUTES} minutes without a click or key press, or when you reload the page.`}
+        >
+          <form onSubmit={handleActivate} className="flex flex-col gap-4">
+            <Field label="Account ID">
+              <Input
+                value={activateIdInput}
+                onChange={(event) => setActivateIdInput(event.target.value)}
+                placeholder="0.0.123456"
+              />
+            </Field>
+            <Field label="Private key (testnet only)">
+              {/* Not type="password": the browser would offer to save the key
+                  in its password manager. The characters are hidden with CSS. */}
+              <Input
+                className="[-webkit-text-security:disc]"
+                type="text"
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                value={activateKeyInput}
+                onChange={(event) => setActivateKeyInput(event.target.value)}
+              />
+            </Field>
+            <Button type="submit">Use this account</Button>
+          </form>
 
-        {activateError && <p role="alert">{activateError}</p>}
-
-        <p>
-          The active account is kept in memory only. It is forgotten when you
-          click Forget, after {INACTIVITY_LIMIT_MINUTES} minutes without a
-          click or key press, or when you reload the page.
-        </p>
-      </section>
+          {activateError && <Callout tone="danger">{activateError}</Callout>}
+        </Panel>
+      </PanelList>
     </main>
   );
 }
