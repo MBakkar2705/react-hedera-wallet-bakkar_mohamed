@@ -5,12 +5,8 @@ import { useState, type FormEvent } from "react";
 import { getErrorMessage } from "@/lib/api";
 import { ACCOUNT_ID_PATTERN } from "@/lib/accounts";
 import { useActiveAccount } from "@/lib/active-account";
+import { buttonClass, inputClass } from "@/lib/styles";
 import { transferHbar, type TransferHbarResult } from "@/lib/transfer";
-
-const inputClass =
-  "w-full rounded border border-black/20 bg-transparent px-3 py-2 dark:border-white/25";
-const buttonClass =
-  "rounded bg-foreground px-4 py-2 text-background disabled:opacity-50";
 
 export default function TransferPage() {
   const { account } = useActiveAccount();

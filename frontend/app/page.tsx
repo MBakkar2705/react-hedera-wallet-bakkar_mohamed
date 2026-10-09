@@ -20,6 +20,11 @@ export default function Home() {
             Transfer HBAR
           </Link>
         </li>
+        <li>
+          <Link href="/tokens" className="font-medium underline">
+            Tokens
+          </Link>
+        </li>
       </ul>
     </main>
   );

@@ -13,11 +13,7 @@ import {
   INACTIVITY_LIMIT_MINUTES,
   useActiveAccount,
 } from "@/lib/active-account";
-
-const inputClass =
-  "w-full rounded border border-black/20 bg-transparent px-3 py-2 dark:border-white/25";
-const buttonClass =
-  "rounded bg-foreground px-4 py-2 text-background disabled:opacity-50";
+import { buttonClass, inputClass } from "@/lib/styles";
 
 export default function AccountsPage() {
   const { activate } = useActiveAccount();

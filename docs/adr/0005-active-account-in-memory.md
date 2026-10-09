@@ -41,13 +41,14 @@ ADR 0001 decided that the user enters a private key explicitly and that the fron
 - `pnpm --filter frontend lint` reports nothing and `pnpm --filter frontend build` succeeds, with the `/transfer` route listed.
 - From the active account `0.0.10937780`, a transfer of 1 HBAR to `0.0.10937901` showed `Status: SUCCESS` on the transfer page, with the transaction ID `0.0.10937780@1791480449.935752603`. The balance of the recipient, read with the accounts page, went from 1 to 2 HBAR.
 - After "Use this account", the top bar showed the account ID and no key.
+- The association and transfer forms of the tokens screen used the active account: an association and a transfer of tokens succeeded with accounts activated from the form.
 - After Forget, the bar showed "No active account", and the transfer page showed the message with the link to the accounts page.
 - After a page reload, the active account was gone.
 - With the account active and no click or key press, the bar showed "No active account" at 18:56, about 5 minutes after the last click (the transfer, at about 18:50). The exact moment of the change was not observed.
 - The "Use an existing account" form, first version with a `type="password"` field: the key was shown as dots, the bar showed the account ID and not the key, the field was empty after activation, and a transfer of 1 HBAR from that account succeeded (transaction `0.0.10940355@1791485468.075806260`).
 - With that `type="password"` field, Edge displayed "Enregistrer votre mot de passe ?" with the account ID as user name, although `autoComplete="off"` was set. The user chose "never" for the site, so nothing was saved.
 - After the field was changed to a CSS-masked text field, in an InPrivate Edge window the key was shown as dots and no save prompt appeared. Lint and build passed.
-- A search in the files of the two screens and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`) found no call to `localStorage`, `sessionStorage` or cookies. The only match is a comment.
+- A search in the files of the three screens and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`, `lib/tokens.ts`) found no call to `localStorage`, `sessionStorage` or cookies. The only match is a comment.
 
 ### Not proven
 
