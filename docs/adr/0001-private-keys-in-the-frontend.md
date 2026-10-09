@@ -45,5 +45,5 @@ Signing in the browser with a wallet, so that no private key is sent to the API.
 
 ### Not proven
 
-- That the frontend never stores a key: the keys are held in React state only. A search in the files of the accounts screen, the transfer screen, the tokens screen and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`, `lib/tokens.ts`) found no call to `localStorage`, `sessionStorage` or cookies, but the browser storage was not inspected, and the topic screen does not exist yet.
+- That the frontend never stores a key: the keys are held in React state only. A search in the files of the accounts, transfer, tokens and topics screens and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`, `lib/tokens.ts`, `lib/topics.ts`) found no call to `localStorage`, `sessionStorage` or cookies, but the browser storage was not inspected.
 - The effort of wallet signing: the statement that it requires changes in `src/` and in the tests is an assessment, not a measurement.

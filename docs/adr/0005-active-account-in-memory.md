@@ -48,7 +48,7 @@ ADR 0001 decided that the user enters a private key explicitly and that the fron
 - The "Use an existing account" form, first version with a `type="password"` field: the key was shown as dots, the bar showed the account ID and not the key, the field was empty after activation, and a transfer of 1 HBAR from that account succeeded (transaction `0.0.10940355@1791485468.075806260`).
 - With that `type="password"` field, Edge displayed "Enregistrer votre mot de passe ?" with the account ID as user name, although `autoComplete="off"` was set. The user chose "never" for the site, so nothing was saved.
 - After the field was changed to a CSS-masked text field, in an InPrivate Edge window the key was shown as dots and no save prompt appeared. Lint and build passed.
-- A search in the files of the three screens and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`, `lib/tokens.ts`) found no call to `localStorage`, `sessionStorage` or cookies. The only match is a comment.
+- A search in the files of the four screens and the active account (`app/`, `components/`, `lib/active-account.tsx`, `lib/transfer.ts`, `lib/accounts.ts`, `lib/tokens.ts`, `lib/topics.ts`) found no call to `localStorage`, `sessionStorage` or cookies. The only match is a comment.
 
 ### Not proven
 

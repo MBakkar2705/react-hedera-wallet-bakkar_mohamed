@@ -25,6 +25,11 @@ export default function Home() {
             Tokens
           </Link>
         </li>
+        <li>
+          <Link href="/topics" className="font-medium underline">
+            Topics
+          </Link>
+        </li>
       </ul>
     </main>
   );

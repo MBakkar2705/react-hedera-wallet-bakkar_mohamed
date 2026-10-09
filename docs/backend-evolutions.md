@@ -14,3 +14,5 @@ Changes in `src/` that would help the frontend or the project. None of them is d
 10. **Two pairs of environment variables** (`OPERATOR_*` and `HEDERA_*`) for what can be one account (ADR 0003).
 11. **Folder layout.** The backend is at the repository root. Moving it to `backend/` is postponed (ADR 0002, decision 6).
 12. **A Jest warning** ("worker process has failed to exit gracefully") appeared once, with an unknown cause (ADR 0002).
+13. **Reading the messages of a topic without any message returns 500.** Observed: the messages of a new topic give "Internal server error" on the page, which is the message of an HTTP 500 (the status was not looked at in the Network tab). From the code: `getMessages` throws a plain error when the list is empty, and Swagger documents a 404. An empty list with a 200 would be the natural answer.
+14. **The messages of a topic come from the local database only.** From the code: `sendMessage` saves each message in SQLite and `getMessages` reads them back from there, so a message published by any other means does not appear. Observed: the two messages published from the application were listed in order.
