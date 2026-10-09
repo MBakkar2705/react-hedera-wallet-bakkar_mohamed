@@ -632,7 +632,7 @@ Messages previously submitted to Hedera topic 0.0.6850099 were successfully retr
 This structure reflects the actual GitHub repository contents, excluding sensitive and build-specific artifacts
 
 ```plaintext
-react-hedera-wallet-bakkar_mohamed\
+hedera-wallet-nestjs-nextjs\
 ├── backend/
 │   ├── src/
 │   │   ├── app.controller.ts
