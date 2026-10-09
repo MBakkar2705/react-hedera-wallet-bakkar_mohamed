@@ -1,4 +1,4 @@
-# ADR 0006: Design system with Tailwind tokens and local components
+# ADR 0011: Design system with Tailwind tokens and local components
 
 - Status: Accepted
 - Date: 2026-10-09
@@ -46,5 +46,5 @@ The four screens were first built with Tailwind classes copied from page to page
 
 - Color contrast was computed from the hex values, not measured on screen with a tool.
 - The dark mode was not displayed.
-- Other browsers than Edge, including the CSS masking of the key field (see ADR 0005).
+- Other browsers than Edge, including the CSS masking of the key field (see ADR 0010).
 - A token transfer from the operator account with the redesigned tokens page was not reported.

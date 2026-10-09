@@ -11,7 +11,7 @@ import {
 } from "react";
 
 // The account used to sign operations. It lives in memory only: never in
-// localStorage, sessionStorage, cookies, URLs or logs (see ADR 0001 and 0005).
+// localStorage, sessionStorage, cookies, URLs or logs (see ADR 0009 and 0010).
 export interface ActiveAccount {
   accountId: string;
   privateKey: string;

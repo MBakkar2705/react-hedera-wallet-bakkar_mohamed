@@ -1,6 +1,6 @@
-# ADR 0002: Frontend integration in the repository
+# ADR 0008: Frontend integration in the repository
 
-- Status: Accepted (decision 6 carried out by ADR 0007)
+- Status: Accepted (decision 6 carried out by ADR 0012)
 - Date: 2026-10-08
 
 ## Context
@@ -18,7 +18,7 @@ The backend is built with `nest build`, tested with Jest, packaged by a multi-st
 3. The scaffold comes from create-next-app (commit `de98d06`): Next.js 16.4.0, React 19.3.0, TypeScript, Tailwind CSS, ESLint and the App Router, with `app/` directly under `frontend/` (no `src/` directory). The option `experimental.agentFeedback` is set to `false` in `next.config.ts`. It controls whether `next dev` creates and updates instructions for detected AI coding agents; it is disabled so that no file is changed by that mechanism.
 4. The dev server listens on port 3001 (`next dev -p 3001`, commit `b6696c5`), because the backend listens on port 3000 by default.
 5. Two boundaries keep a later split into services possible: the frontend will reach the API through one base URL defined in a single place, and no code is imported between `frontend/` and `src/`. Both rules are written in `CLAUDE.md` (see ADR 0004). The accounts screen follows them: the API address is defined only in `frontend/lib/api.ts`, and nothing in `frontend/` imports from `src/`.
-6. Moving the backend into a `backend/` folder is postponed. It would touch the Dockerfile, the CI workflow, `jest.config.js`, `nest-cli.json` and the tsconfig files. It will be done in its own branch, with `git mv`, before any work on services. Done: see [ADR 0007](0007-backend-and-frontend-in-sibling-folders.md).
+6. Moving the backend into a `backend/` folder is postponed. It would touch the Dockerfile, the CI workflow, `jest.config.js`, `nest-cli.json` and the tsconfig files. It will be done in its own branch, with `git mv`, before any work on services. Done: see [ADR 0012](0012-backend-and-frontend-in-sibling-folders.md).
 
 ## Alternatives considered
 

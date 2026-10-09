@@ -1,8 +1,8 @@
-# ADR 0001: Private keys in the frontend
+# ADR 0009: Private keys in the frontend
 
 - Status: Accepted
 - Date: 2026-10-08
-- Note (2026-10-09): written while the frontend was being added; it has four screens now (see ADR 0005 and ADR 0006). The `src/` paths below are `backend/src/` since ADR 0007.
+- Note (2026-10-09): written while the frontend was being added; it has four screens now (see ADR 0010 and ADR 0011). The `src/` paths below are `backend/src/` since ADR 0012.
 
 ## Context
 
@@ -18,7 +18,7 @@ This project targets the Hedera testnet and is a demonstration.
 2. The backend is not changed for this: it keeps receiving the key in the request body.
 3. Operator credentials (`OPERATOR_ID`, `OPERATOR_KEY`) stay in the backend `.env` file and never appear in the frontend code. In the frontend, only the API base URL may use a `NEXT_PUBLIC_` variable, because those variables are readable by any visitor. One exception, for the testnet demo: tokens created by the backend are held by the operator account, so sending them requires its key. The user may type that key in the form of the active account, like any other key.
 4. CORS on the backend is limited to one explicit origin: `app.enableCors({ origin: 'http://localhost:3001' })` in `src/main.ts`.
-5. In the frontend, the key is typed once and held in an active account in memory, shared by the screens (see ADR 0005).
+5. In the frontend, the key is typed once and held in an active account in memory, shared by the screens (see ADR 0010).
 
 ## Alternatives considered
 
@@ -30,7 +30,7 @@ Signing in the browser with a wallet, so that no private key is sent to the API.
 - The user types a private key into a web page. A key held in page memory can still be read by any script that runs in that page.
 - This approach is acceptable for a testnet demo only. It must not be used with real funds.
 - CORS is enforced by the browser; it is not access control. Any client that is not a browser can still call the API.
-- Typing the operator key in the page exposes it to the same risks as any other key (see ADR 0005). This is acceptable on the testnet only.
+- Typing the operator key in the page exposes it to the same risks as any other key (see ADR 0010). This is acceptable on the testnet only.
 - Moving to wallet signing later is possible but is a backend change and needs its own ADR.
 
 ## Verification
@@ -41,7 +41,7 @@ Signing in the browser with a wallet, so that no private key is sent to the API.
 - The CORS response header was checked with `curl` against the running backend.
 - The README documents a request body with `fromPrivateKey` for `POST /tokens/transfer`.
 - From the accounts page of the frontend, in a browser, a JSON POST to `/accounts` got a preflight response (204) and then a 201 response, which the page displayed. No CORS error appeared in the console.
-- After a page reload, the active account and its key were gone (observed in the browser, see ADR 0005).
+- After a page reload, the active account and its key were gone (observed in the browser, see ADR 0010).
 - From the tokens screen, a token was created (`0.0.10951658`), the account `0.0.10940355` was associated with it, and 10 tokens were sent to it from the treasury account `0.0.6106565`, activated with the form (transaction `0.0.6106565@1791534924.694135764`). The lookup of the receiving account then showed `Token associations: 1`.
 
 ### Not proven

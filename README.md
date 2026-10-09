@@ -35,7 +35,7 @@ Main features:
 - Topic creation and messaging via Hedera Consensus Service
 - A web interface for these operations (accounts, transfer, tokens, topics)
 
-Repository layout: the NestJS backend is in `backend/` and the Next.js frontend is in `frontend/`. Both are members of one pnpm workspace: `pnpm-workspace.yaml`, `pnpm-lock.yaml` and a minimal `package.json` are at the repository root. See [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md).
+Repository layout: the NestJS backend is in `backend/` and the Next.js frontend is in `frontend/`. Both are members of one pnpm workspace: `pnpm-workspace.yaml`, `pnpm-lock.yaml` and a minimal `package.json` are at the repository root. See [ADR 0012](docs/adr/0012-backend-and-frontend-in-sibling-folders.md).
 
 ---
 
@@ -93,7 +93,7 @@ Frontend:
 
 ## Backend Progress Details
 
-The steps below describe the backend. They keep the paths they had when each step was done. Since the reorganization described in [ADR 0007](docs/adr/0007-backend-and-frontend-in-sibling-folders.md), `src/`, `test/` and the configuration files of the backend are in `backend/`, and the files `.env` and `hedera-wallet.db` are `backend/.env` and `backend/hedera-wallet.db`. The commands `pnpm run start` and `pnpm run test` still work from the repository root.
+The steps below describe the backend. They keep the paths they had when each step was done. Since the reorganization described in [ADR 0012](docs/adr/0012-backend-and-frontend-in-sibling-folders.md), `src/`, `test/` and the configuration files of the backend are in `backend/`, and the files `.env` and `hedera-wallet.db` are `backend/.env` and `backend/hedera-wallet.db`. The commands `pnpm run start` and `pnpm run test` still work from the repository root.
 
 ### Step 1 - Initialization of the NestJS project
 
@@ -743,7 +743,7 @@ This method applies to all future entities stored in SQLite
 ## Prerequisites
 
 - Node.js >= 20.9 (required by the Next.js frontend)
-- pnpm 10.11.0, the version pinned in `packageManager` (run `corepack enable` and Node installs it on first use, as the Dockerfile does)
+- pnpm 10.11.0, the version pinned in `packageManager` (with Corepack: `corepack enable`, as in the Dockerfile)
 
 ---
 
@@ -756,19 +756,19 @@ copy backend\.env.example backend\.env
 - `OPERATOR_ID`, `OPERATOR_KEY`: read by the Hedera module and the tokens service.
 - `HEDERA_ACCOUNT_ID`, `HEDERA_PRIVATE_KEY`: read by the accounts service.
 
-Both pairs can hold the same testnet account. The application exits at startup if `OPERATOR_ID`, `OPERATOR_KEY` or `HEDERA_PRIVATE_KEY` is missing. Use a testnet account only. See [ADR 0003](docs/adr/0003-environment-variables.md).
+Both pairs can hold the same testnet account. The application exits at startup if `OPERATOR_ID`, `OPERATOR_KEY` or `HEDERA_PRIVATE_KEY` is missing. Use a testnet account only. See [ADR 0007](docs/adr/0007-environment-variables.md).
 
 ---
 
 ## Frontend
 
-The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0002](docs/adr/0002-frontend-integration-in-the-repository.md).
+The frontend is a Next.js application in the `frontend/` folder. It is a member of the pnpm workspace (see `pnpm-workspace.yaml`): a single `pnpm install` at the repository root installs the backend and the frontend, with one `pnpm-lock.yaml` at the root. See [ADR 0008](docs/adr/0008-frontend-integration-in-the-repository.md).
 
 Current state: first version complete. Four screens, tested by hand in a browser against the running backend: the accounts screen (`/accounts`) creates an account, looks up a balance and chooses the active account, the transfer screen (`/transfer`) sends HBAR from the active account, and the tokens screen (`/tokens`) creates a token, associates the active account with it and transfers tokens, and the topics screen (`/topics`) creates a topic, publishes a message and lists the messages of a topic. The account lookup shows only the number of associated tokens, because the backend returns token IDs only, and the messages of a topic come from the local database of the backend. Lint and build pass, locally and in the CI. Backend changes that would help the frontend are listed in [docs/backend-evolutions.md](docs/backend-evolutions.md).
 
-Active account: to sign an operation, the user activates an account (account ID and private key) on `/accounts`. It is held in React state (`frontend/lib/active-account.tsx`), the top bar shows the account ID only, and the key is typed in a masked text field (not a password field, so that the browser does not offer to save it). It is forgotten when the user clicks Forget, after 5 minutes without a click or key press (checked by hand), or when the page is loaded again. See [ADR 0005](docs/adr/0005-active-account-in-memory.md). Tokens created by the backend are held by its operator account, so sending them requires activating that account with its key, typed in the form (Hedera testnet only, see [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md)).
+Active account: to sign an operation, the user activates an account (account ID and private key) on `/accounts`. It is held in React state (`frontend/lib/active-account.tsx`), the top bar shows the account ID only, and the key is typed in a masked text field (not a password field, so that the browser does not offer to save it). It is forgotten when the user clicks Forget, after 5 minutes without a click or key press (checked by hand), or when the page is loaded again. See [ADR 0010](docs/adr/0010-active-account-in-memory.md). Tokens created by the backend are held by its operator account, so sending them requires activating that account with its key, typed in the form (Hedera testnet only, see [ADR 0009](docs/adr/0009-private-keys-in-the-frontend.md)).
 
-Design: the colors are defined once in `frontend/app/globals.css` (Tailwind 4 tokens, indigo and violet, dark values defined but not displayed yet). The repeated parts of the interface are local components in `frontend/components/ui/` (`Button`, `Field`, `Panel`, `Callout`, `CodeValue`), and the header, the brand mark and the active account bar are in `frontend/components/`. The design uses Tailwind only, with no UI library. Keys and transaction values have a Copy button with a warning about the clipboard. See [ADR 0006](docs/adr/0006-design-system-tailwind-local-components.md).
+Design: the colors are defined once in `frontend/app/globals.css` (Tailwind 4 tokens, indigo and violet, dark values defined but not displayed yet). The repeated parts of the interface are local components in `frontend/components/ui/` (`Button`, `Field`, `Panel`, `Callout`, `CodeValue`), and the header, the brand mark and the active account bar are in `frontend/components/`. The design uses Tailwind only, with no UI library. Keys and transaction values have a Copy button with a warning about the clipboard. See [ADR 0011](docs/adr/0011-design-system-tailwind-local-components.md).
 
 The API address is defined in one place, `frontend/lib/api.ts` (variable `NEXT_PUBLIC_API_URL`, default `http://localhost:3000`).
 
@@ -782,7 +782,7 @@ The frontend runs on http://localhost:3001 and the backend on http://localhost:3
 
 CORS: the backend allows a single origin, http://localhost:3001 (`backend/src/main.ts`). This was checked with curl and from the accounts page in a browser: the browser sent a preflight request (204) before the POST (201).
 
-Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`backend/src/`) and in its tests. See [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md) and [ADR 0005](docs/adr/0005-active-account-in-memory.md).
+Private keys: some endpoints take a private key in the request body (Hedera testnet demo only). The frontend keeps keys in page memory only: never in localStorage, sessionStorage, cookies, URLs or logs. Signing with a wallet instead of sending a key is a possible evolution, not implemented: it would require changes in the backend (`backend/src/`) and in its tests. See [ADR 0009](docs/adr/0009-private-keys-in-the-frontend.md) and [ADR 0010](docs/adr/0010-active-account-in-memory.md).
 
 ---
 
@@ -1167,13 +1167,27 @@ The GitHub Actions workflow (.github/workflows/ci.yml) installs dependencies wit
 
 Design decisions are recorded in `docs/adr/`, one file per decision, following the template [0000-template.md](docs/adr/0000-template.md). Each record has a Verification section that separates what was proven from what was not.
 
-- [ADR 0001: Private keys in the frontend](docs/adr/0001-private-keys-in-the-frontend.md)
-- [ADR 0002: Frontend integration in the repository](docs/adr/0002-frontend-integration-in-the-repository.md)
-- [ADR 0003: Environment variables](docs/adr/0003-environment-variables.md)
+The records are numbered in the order of the project: first the backend, then the frontend and what goes with it.
+
+**Backend**
+
+- [ADR 0001: NestJS as the backend framework](docs/adr/0001-nestjs-as-backend-framework.md)
+- [ADR 0002: SQLite and TypeORM for persistence](docs/adr/0002-sqlite-and-typeorm-for-persistence.md)
+- [ADR 0003: Jest for the backend tests](docs/adr/0003-jest-for-backend-tests.md)
 - [ADR 0004: Rules for the AI coding assistant](docs/adr/0004-ai-assistant-rules.md)
-- [ADR 0005: Active account held in memory](docs/adr/0005-active-account-in-memory.md)
-- [ADR 0006: Design system with Tailwind tokens and local components](docs/adr/0006-design-system-tailwind-local-components.md)
-- [ADR 0007: Backend and frontend in sibling folders](docs/adr/0007-backend-and-frontend-in-sibling-folders.md)
+- [ADR 0005: A multi-stage Docker image for the backend](docs/adr/0005-docker-image-for-the-backend.md)
+- [ADR 0006: Continuous integration with GitHub Actions](docs/adr/0006-github-actions-continuous-integration.md)
+- [ADR 0007: Environment variables](docs/adr/0007-environment-variables.md)
+
+**Frontend and repository layout**
+
+- [ADR 0008: Frontend integration in the repository](docs/adr/0008-frontend-integration-in-the-repository.md)
+- [ADR 0009: Private keys in the frontend](docs/adr/0009-private-keys-in-the-frontend.md)
+- [ADR 0010: Active account held in memory](docs/adr/0010-active-account-in-memory.md)
+- [ADR 0011: Design system with Tailwind tokens and local components](docs/adr/0011-design-system-tailwind-local-components.md)
+- [ADR 0012: Backend and frontend in sibling folders](docs/adr/0012-backend-and-frontend-in-sibling-folders.md)
+
+The records were renumbered to follow this order. Earlier commit messages use the former numbers: former 0001 is now 0009, 0002 is 0008, 0003 is 0007, 0005 is 0010, 0006 is 0011 and 0007 is 0012. The former 0008 to 0012 were never committed under those numbers. ADR 0004 keeps its number.
 
 ---
 
@@ -1183,7 +1197,7 @@ Design decisions are recorded in `docs/adr/`, one file per decision, following t
 - Both applications are structured for testability.
 - Backend: modules are isolated by responsibility (accounts, tokens, topics, etc.).
 - Backend: SQLite is used for lightweight storage during development.
-- Frontend: the API address is defined in one place, and no secret is put in the frontend code (see [ADR 0001](docs/adr/0001-private-keys-in-the-frontend.md)).
+- Frontend: the API address is defined in one place, and no secret is put in the frontend code (see [ADR 0009](docs/adr/0009-private-keys-in-the-frontend.md)).
 
 ---
 

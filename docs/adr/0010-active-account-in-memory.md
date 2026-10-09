@@ -1,11 +1,11 @@
-# ADR 0005: Active account held in memory
+# ADR 0010: Active account held in memory
 
 - Status: Accepted
 - Date: 2026-10-08
 
 ## Context
 
-ADR 0001 decided that the user enters a private key explicitly and that the frontend keeps it in page memory only. The HBAR transfer screen is the first screen that needs the key of the sender, and the token screens will need it too. The question is how the key travels from the user to each screen.
+ADR 0009 decided that the user enters a private key explicitly and that the frontend keeps it in page memory only. The HBAR transfer screen is the first screen that needs the key of the sender, and the token screens will need it too. The question is how the key travels from the user to each screen.
 
 ## Decision
 
@@ -17,13 +17,13 @@ ADR 0001 decided that the user enters a private key explicitly and that the fron
    - A Forget button removes the active account.
    - The active account is forgotten after 5 minutes without a click or a key press (`INACTIVITY_LIMIT_MINUTES`).
    - A page reload removes it, because it is never written to `localStorage`, `sessionStorage`, cookies, URLs or logs.
-4. The backend is not changed. The key is still sent in the request body, as decided in ADR 0001.
+4. The backend is not changed. The key is still sent in the request body, as decided in ADR 0009.
 
 ## Alternatives considered
 
 - Asking for the key in every form. The key is exposed only while an operation is prepared, but it is typed on every screen and every time. Not chosen: it multiplies the places where the key is typed.
 - A `type="password"` field for the key. It was the first version. Replaced because the browser offered to save the key as a password.
-- Signing with a wallet, so that no key reaches the page or the API. Still a possible evolution (see ADR 0001), not implemented.
+- Signing with a wallet, so that no key reaches the page or the API. Still a possible evolution (see ADR 0009), not implemented.
 
 ## Consequences
 

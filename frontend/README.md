@@ -23,4 +23,4 @@ The API address is defined in one place, `lib/api.ts` (variable `NEXT_PUBLIC_API
 
 ## More
 
-The README at the root of the repository describes the whole project. The private keys, the active account and the design are explained in ADR 0001, ADR 0005 and ADR 0006 in `docs/adr/`.
+The README at the root of the repository describes the whole project. The private keys, the active account and the design are explained in ADR 0009, ADR 0010 and ADR 0011 in `docs/adr/`.

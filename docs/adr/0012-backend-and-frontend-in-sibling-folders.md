@@ -1,13 +1,13 @@
-# ADR 0007: Backend and frontend in sibling folders
+# ADR 0012: Backend and frontend in sibling folders
 
 - Status: Accepted
 - Date: 2026-10-09
 
 ## Context
 
-The backend lived at the repository root (`src/`, `test/`, `package.json`, `Dockerfile`, Jest, Nest and TypeScript configuration) and the frontend in `frontend/`, so the root mixed the files of one application with the files of the whole repository. The configuration of the backend had to exclude `frontend` (`tsconfig.build.json`, `jest.config.js`, `.dockerignore`). ADR 0002, decision 6, postponed the move into `backend/` and planned it in its own branch, with `git mv`.
+The backend lived at the repository root (`src/`, `test/`, `package.json`, `Dockerfile`, Jest, Nest and TypeScript configuration) and the frontend in `frontend/`, so the root mixed the files of one application with the files of the whole repository. The configuration of the backend had to exclude `frontend` (`tsconfig.build.json`, `jest.config.js`, `.dockerignore`). ADR 0008, decision 6, postponed the move into `backend/` and planned it in its own branch, with `git mv`.
 
-Two paths in the code are relative to the folder the backend is started from, so they move with the start folder: `import 'dotenv/config'` in `src/main.ts` reads `.env` there (ADR 0003), and `database: 'hedera-wallet.db'` in `src/app.module.ts` creates the SQLite file there.
+Two paths in the code are relative to the folder the backend is started from, so they move with the start folder: `import 'dotenv/config'` in `src/main.ts` reads `.env` there (ADR 0007), and `database: 'hedera-wallet.db'` in `src/app.module.ts` creates the SQLite file there.
 
 ## Decision
 
@@ -26,11 +26,11 @@ Two paths in the code are relative to the folder the backend is started from, so
 - A layout with an `apps/` folder (`apps/backend`, `apps/frontend`). Not chosen: one more level of folders for two applications.
 - Keeping `.env` at the root and loading it with a path to the parent folder. Not chosen: it needs a change in `backend/src/` and a relative path to the parent folder, which breaks when the start folder changes.
 - Letting pnpm rewrite the lockfile. Tried first, then rejected, see the verification.
-- Separate repositories. Not reconsidered here: ADR 0002 integrates the frontend in this repository.
+- Separate repositories. Not reconsidered here: ADR 0008 integrates the frontend in this repository.
 
 ## Consequences
 
-- Older records cite the paths before the move: `src/`, `.env` at the root, the protected files at the root (ADR 0001, ADR 0002, ADR 0003, ADR 0004, and the steps of the README). ADR 0002, ADR 0003 and ADR 0004 carry a note in their status. The README explains the rule once, in "Progress Details".
+- Older records cite the paths before the move: `src/`, `.env` at the root, the protected files at the root (ADR 0009, ADR 0008, ADR 0007, ADR 0004, and the steps of the README). ADR 0008, ADR 0007 and ADR 0004 carry a note in their status. The README explains the rule once, in "Progress Details".
 - Whoever clones the repository creates `backend/.env` from `backend/.env.example`.
 - An existing local `.env` and `hedera-wallet.db` at the root are not used any more: they must be moved to `backend/` by hand. The old `node_modules` and `dist` at the root are stale and must be deleted before `pnpm install`.
 - `packageManager` is written in three `package.json` files (root, backend, frontend). They can drift.

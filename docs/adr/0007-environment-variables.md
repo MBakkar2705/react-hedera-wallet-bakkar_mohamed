@@ -1,6 +1,6 @@
-# ADR 0003: Environment variables
+# ADR 0007: Environment variables
 
-- Status: Accepted (decision 1 amended by ADR 0007: the `.env` file is now `backend/.env`)
+- Status: Accepted (decision 1 amended by ADR 0012: the `.env` file is now `backend/.env`)
 - Date: 2026-10-08
 
 ## Context
