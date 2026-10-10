@@ -4,7 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TokenEntity } from './entities/token.entity';
 import { AssociationEntity } from './entities/association.entity';
 import { TokenTransferEntity } from './entities/token-transfer.entity';
-import { Repository } from 'typeorm';
 import { CreateTokenDto } from './dto/create-token.dto';
 import { AssociateTokenDto } from './dto/associate-token.dto';
 import { TransferTokenDto } from './dto/transfer-token.dto';

@@ -19,4 +19,4 @@ async function bootstrap() {
 
   await app.listen(3000, '0.0.0.0');
 }
-bootstrap();
+void bootstrap();

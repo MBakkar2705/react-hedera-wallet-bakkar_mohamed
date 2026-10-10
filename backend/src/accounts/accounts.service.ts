@@ -49,7 +49,9 @@ export class AccountsService {
 
     const result = {
       accountId,
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- SDK: toString() exists at runtime, missing from .d.ts
       publicKey: publicKey.toString(),
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- SDK: toString() exists at runtime, missing from .d.ts
       privateKey: privateKey.toString(),
       initialBalance,
     };
