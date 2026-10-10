@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -21,7 +21,7 @@ import { AssociationEntity } from './entities/association.entity';
 import { TokenTransferEntity } from './entities/token-transfer.entity';
 
 @Injectable()
-export class TokensService {
+export class TokensService implements OnModuleDestroy {
   private readonly client: Client;
 
   constructor(
@@ -43,6 +43,10 @@ export class TokensService {
 
     this.client = Client.forTestnet();
     this.client.setOperator(operatorId, PrivateKey.fromString(operatorKey));
+  }
+
+  onModuleDestroy() {
+    this.client.close();
   }
 
   async createToken(dto: CreateTokenDto) {

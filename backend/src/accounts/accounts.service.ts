@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
@@ -17,7 +17,7 @@ import {
 } from '@hashgraph/sdk';
 
 @Injectable()
-export class AccountsService {
+export class AccountsService implements OnModuleDestroy {
   private client: Client;
 
   constructor(
@@ -29,6 +29,10 @@ export class AccountsService {
 
     this.client = Client.forTestnet();
     this.client.setOperator(operatorId, operatorKey);
+  }
+
+  onModuleDestroy() {
+    this.client.close();
   }
 
   async createAccount(initialBalance: number): Promise<any> {
