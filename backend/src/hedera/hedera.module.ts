@@ -9,7 +9,7 @@ import { Client } from '@hashgraph/sdk';
       useFactory: () =>
         Client.forTestnet().setOperator(
           process.env.OPERATOR_ID!,
-          process.env.OPERATOR_KEY!
+          process.env.OPERATOR_KEY!,
         ),
     },
   ],

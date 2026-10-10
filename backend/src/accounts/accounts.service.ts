@@ -2,10 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AccountEntity } from './entities/account.entity';
-import { Client, AccountCreateTransaction, PrivateKey, Hbar } from '@hashgraph/sdk';
+import {
+  Client,
+  AccountCreateTransaction,
+  PrivateKey,
+  Hbar,
+} from '@hashgraph/sdk';
 import { AccountInfoQuery } from '@hashgraph/sdk';
 import { TransferHbarDto } from './dto/transfer-hbar.dto';
-import {TransferTransaction, AccountId, TransactionReceipt } from '@hashgraph/sdk';
+import {
+  TransferTransaction,
+  AccountId,
+  TransactionReceipt,
+} from '@hashgraph/sdk';
 
 @Injectable()
 export class AccountsService {
@@ -22,7 +31,6 @@ export class AccountsService {
     this.client.setOperator(operatorId, operatorKey);
   }
 
-
   async createAccount(initialBalance: number): Promise<any> {
     const privateKey = PrivateKey.generate();
     const publicKey = privateKey.publicKey;
@@ -36,7 +44,7 @@ export class AccountsService {
     const accountId = receipt.accountId?.toString();
 
     if (!accountId) {
-    throw new Error('Account creation failed: receipt.accountId is null');
+      throw new Error('Account creation failed: receipt.accountId is null');
     }
 
     const result = {
@@ -60,8 +68,8 @@ export class AccountsService {
       return {
         accountId: info.accountId.toString(),
         hbarBalance: info.balance.toString(),
-        tokenAssociations: Array.from(info.tokenRelationships.values()).map(rel =>
-        rel.tokenId.toString()
+        tokenAssociations: Array.from(info.tokenRelationships.values()).map(
+          (rel) => rel.tokenId.toString(),
         ),
       };
     } catch (error) {
@@ -69,7 +77,12 @@ export class AccountsService {
     }
   }
 
-  async transferHbar({ fromAccountId, fromPrivateKey, toAccountId, amount }: TransferHbarDto) {
+  async transferHbar({
+    fromAccountId,
+    fromPrivateKey,
+    toAccountId,
+    amount,
+  }: TransferHbarDto) {
     const client = Client.forTestnet();
 
     const senderId = AccountId.fromString(fromAccountId);
@@ -88,7 +101,7 @@ export class AccountsService {
       transactionId: tx.transactionId.toString(),
       from: fromAccountId,
       to: toAccountId,
-      amount: `${amount} ℏ`
+      amount: `${amount} ℏ`,
     };
   }
   private async saveAccountLocally(data: {
@@ -100,6 +113,4 @@ export class AccountsService {
     const account = this.accountRepo.create(data);
     await this.accountRepo.save(account);
   }
-
 }
-

@@ -9,7 +9,7 @@ import {
   TokenCreateTransaction,
   TokenAssociateTransaction,
   TransferTransaction,
-  TokenId
+  TokenId,
 } from '@hashgraph/sdk';
 
 import { CreateTokenDto } from './dto/create-token.dto';
@@ -94,7 +94,11 @@ export class TokensService {
       throw new Error(`Association failed: ${receipt.status.toString()}`);
     }
 
-    await this.associationRepo.save({ accountId, tokenId, status: 'ASSOCIATED' });
+    await this.associationRepo.save({
+      accountId,
+      tokenId,
+      status: 'ASSOCIATED',
+    });
 
     return { status: receipt.status.toString(), accountId, tokenId };
   }
@@ -103,8 +107,16 @@ export class TokensService {
     const { fromAccountId, fromPrivateKey, toAccountId, tokenId, amount } = dto;
 
     const transaction = new TransferTransaction()
-      .addTokenTransfer(TokenId.fromString(tokenId), AccountId.fromString(fromAccountId), -amount)
-      .addTokenTransfer(TokenId.fromString(tokenId), AccountId.fromString(toAccountId), amount);
+      .addTokenTransfer(
+        TokenId.fromString(tokenId),
+        AccountId.fromString(fromAccountId),
+        -amount,
+      )
+      .addTokenTransfer(
+        TokenId.fromString(tokenId),
+        AccountId.fromString(toAccountId),
+        amount,
+      );
 
     const key = PrivateKey.fromString(fromPrivateKey);
     const signedTx = await transaction.freezeWith(this.client).sign(key);
